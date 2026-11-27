@@ -1286,6 +1286,9 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .shead>.mini,.sethead>.mini{grid-column:1;justify-self:start;align-self:center;white-space:nowrap;line-height:1;cursor:pointer}
 .shead h2,.sethead h2{grid-column:2;text-align:center;line-height:1.1}
 .shead::after,.sethead::after{content:"";grid-column:3}
+/* espaço entre as seções de Como jogar e Configurações */
+#howto,#settings{display:flex;flex-direction:column;gap:14px}
+#howto>.shead,#settings>.shead{margin-bottom:0}
 @media (max-width:480px){.shead h2,.sethead h2{font-size:22px}}
 </style>
 </head>
@@ -1382,7 +1385,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     <div class="sgroup"><h3>Coringas</h3><ul>
       <li><b>Passivos</b> ficam sempre ligados: revelam pedras, contam o que saiu, dão pontos extras.</li>
       <li><b>Ativos</b> têm 1 uso por mão: toque no coringa na barra e em <b>Usar</b>. Eles brilham quando estão prontos.</li>
-      <li>Vencer um nível rende moedas para comprar coringas na loja (até 5).</li></ul></div>
+      <li>Vencer um nível rende moedas para comprar coringas na loja (até 5).</li>
       <li>Raridades: <b>comum</b>, <b>raro</b>, <b>épico</b>, <b>lendário</b> e <b>exótico</b>. Os exóticos são raríssimos e se quebram depois de usados.</li></ul></div>
     <div class="sgroup"><h3>Online</h3><ul>
       <li>Em <b>Online</b>, um jogador cria a sala e recebe um <b>código</b> de 5 letras. Ele é o anfitrião: a partida roda no aparelho dele.</li>
