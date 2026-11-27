@@ -865,6 +865,11 @@ body.no-anim .cell.crk,body.no-anim .pc.shaky{animation:none}
 .ghostend.ok{animation:gpulse 1.1s ease-in-out infinite}
 .ghostend.no{border-color:#ff4c40!important;background:rgba(255,76,64,.14)!important;opacity:.75}
 .ghostend.no b{color:#ffb3a8}
+.ghostend.ok.turn{opacity:.8;border-style:dotted!important}
+.ghostend.gshape{pointer-events:none;animation:none!important;background:rgba(75,194,146,.14)!important}
+.ghostend.gshape.hover{background:rgba(75,194,146,.5)!important;transform:none;opacity:1}
+.ghostend.ghit{position:absolute;border:0!important;background:transparent!important;z-index:4;border-radius:6px}
+.ghostend.ghit:hover{background:rgba(75,194,146,.35)!important}
 .ghostend.hover{background:rgba(75,194,146,.55)!important;transform:scale(1.06)}
 .ghostend.nope{animation:bshake .32s ease-in-out}
 @keyframes gpulse{50%{background:rgba(75,194,146,.42)}}
@@ -1797,10 +1802,11 @@ const isDbl=t=>t[0]>=0&&t[0]===t[1];
 const handPips=h=>h.reduce((a,t)=>a+pips(t),0);
 const skillFor=(i)=>{ const ch=chs[round-1]||{}; let s=diff+Math.floor((round-1)/3)+(ch.skill||0); if(ch.contador&&i===1) s=3; return Math.max(0,Math.min(3,s)); };
 
-// ---------- mesa (corrente com duas pontas, em serpentina) ----------
+// ---------- mesa (corrente com duas pontas; cada ponta pode seguir reto ou virar) ----------
 let TW=12;                                          // largura da mesa em meias-pedras
 const C0=()=>[[TW/2-1,0],[TW/2,0]];
-function newArms(){ TW=(window.innerWidth||1000)<760?10:12; const c=TW/2; return {L:{x:c-2,y:0,dir:-1,vd:-1,end:null},R:{x:c+1,y:0,dir:1,vd:1,end:null}}; }
+// cada braço guarda a última casa ocupada (hx,hy), a direção atual (dx,dy) e o lado preferido para curvas (vd)
+function newArms(){ TW=(window.innerWidth||1000)<760?10:12; const c=TW/2; return {L:{hx:c-1,hy:0,dx:-1,dy:0,vd:-1,end:null},R:{hx:c,hy:0,dx:1,dy:0,vd:1,end:null}}; }
 function endsOf(){ if(!chain.length) return null; return {L:arms.L.end,R:arms.R.end}; }
 function fits(t,side){
   if(!chain.length) return true;
@@ -1817,7 +1823,51 @@ function movesFor(pi){
   });
   return out;
 }
-// coloca a pedra na serpentina; devolve o registro da pedra na mesa
+const occupied=()=>{ const o=new Set(); chain.forEach(r=>r.cells.forEach(c=>o.add(c[0]+","+c[1]))); return o; };
+const inMesa=(x,y)=>x>=0&&x<=TW-1&&y>=-TW/2&&y<=TW/2-1;
+// casas onde a próxima pedra pode ir numa ponta: reto e as duas curvas, sem sair da mesa nem bater em outra pedra
+function spotsFor(side){
+  if(!chain.length) return [{cells:C0(),o:"h",dir:"s"}];
+  const A=arms[side], occ=occupied();
+  // ordem = preferência dos bots: na horizontal segue reto; na vertical volta para dentro (serpentina)
+  const back=-(A.px||1);
+  const dirs=A.dx?[["s",A.dx,0],["t",0,A.vd],["t2",0,-A.vd]]:[["t",back,0],["s",0,A.dy],["t2",-back,0]];
+  // curva em "L": a metade que encosta fica logo depois da ponta e a pedra vira para o lado.
+  // "lateral" (fica do lado da última metade) só entra quando o L não cabe.
+  const mk=([k,dx,dy],lat)=>{ const a=lat?[A.hx+dx,A.hy+dy]:[A.hx+A.dx,A.hy+A.dy], b=[a[0]+dx,a[1]+dy];
+    const cells=(dx+dy>0)?[a,b]:[b,a];
+    return {cells,o:dx?"h":"v",dir:k,dx,dy,first:dx+dy>0}; };
+  const all=dirs.map(d=>mk(d,false)), side2=dirs.filter(d=>d[0]!=="s").map(d=>mk(d,true));
+  const free=sp=>sp.cells.every(c=>!occ.has(c[0]+","+c[1]));
+  // espaço livre a partir de uma casa (evita curvas que encurralam alguma das pontas)
+  const flood=(h,o,inside,cap)=>{ const q=[h], seen=new Set([h+""]); let n=0;
+    while(q.length&&n<cap){ const [x,y]=q.shift(); for(const [ax,ay] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+ax, ny=y+ay, k=nx+","+ny;
+      if(seen.has(k)||o.has(k)||(inside&&!inMesa(nx,ny))||Math.abs(nx-TW/2)>TW||Math.abs(ny)>TW) continue; seen.add(k); q.push([nx,ny]); n++; } }
+    return n; };
+  const B=arms[side==="L"?"R":"L"];
+  const room=(sp,inside,cap)=>{ const o=new Set(occ); sp.cells.forEach(c=>o.add(c[0]+","+c[1]));
+    const h=sp.first?sp.cells[1]:sp.cells[0];
+    return Math.min(flood(h,o,inside,cap),flood([B.hx,B.hy],o,inside,cap)); };
+  const inside=sp=>sp.cells.every(c=>inMesa(c[0],c[1]));
+  let cand=all.filter(free);
+  let ok=cand.filter(sp=>inside(sp)&&room(sp,true,10)>=10);
+  if(!ok.length){ const c2=side2.filter(free); ok=c2.filter(sp=>inside(sp)&&room(sp,true,10)>=10); cand=cand.concat(c2); }
+  if(!ok.length) ok=cand.filter(sp=>room(sp,false,10)>=10);  // sem espaço na mesa: deixa passar da borda
+  if(!ok.length) ok=cand.slice().sort((a,b)=>room(b,false,40)-room(a,false,40)).slice(0,1);
+  if(!ok.length){                                        // ponta encurralada: vai para a casa livre mais perto
+    const q=[[A.hx,A.hy]], seen=new Set([A.hx+","+A.hy]);
+    while(q.length){ const [x,y]=q.shift();
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const a=[x+dx,y+dy], b2=[x+2*dx,y+2*dy];
+        if(!occ.has(a+"")&&!occ.has(b2+"")){ const fst=dx+dy>0;
+          return [{cells:fst?[a,b2]:[b2,a],o:dx?"h":"v",dir:"s",dx,dy,first:fst,jump:true}]; } }
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const k=(x+dx)+","+(y+dy); if(!seen.has(k)&&Math.abs(x+dx-TW/2)<=TW&&Math.abs(y+dy)<=TW){ seen.add(k); q.push([x+dx,y+dy]); } } }
+    ok=[all[0]];
+  }
+  return ok;
+}
+// posição padrão (bots e quando não se escolhe): a primeira opção livre, na ordem de preferência
+function nextSpot(side){ return spotsFor(side)[0]; }
+// coloca a pedra na mesa; devolve o registro da pedra
 function layTile(t,side,owner,opts){
   opts=opts||{};
   if(!chain.length){
@@ -1831,26 +1881,18 @@ function layTile(t,side,owner,opts){
   if(t[0]<0){ touch=A.end; open=A.end; }
   else if(opts.force){ touch=t[0]; open=t[1]; if(t[1]===A.end){touch=t[1];open=t[0];} }
   else if(t[0]===A.end){ touch=t[0]; open=t[1]; } else { touch=t[1]; open=t[0]; }
-  let rec;
-  if(A.dir>0){
-    if(A.x+1<=TW-1){ rec={cells:[[A.x,A.y],[A.x+1,A.y]],vals:[touch,open],o:"h"}; A.x+=2; }
-    else { const col=A.x-1; rec={cells:[[col,A.y+A.vd],[col,A.y+2*A.vd]],vals:A.vd>0?[touch,open]:[open,touch],o:"v"}; A.y+=2*A.vd; A.dir=-1; A.x=col-1; }
-  } else {
-    if(A.x-1>=0){ rec={cells:[[A.x-1,A.y],[A.x,A.y]],vals:[open,touch],o:"h"}; A.x-=2; }
-    else { const col=A.x+1; rec={cells:[[col,A.y+A.vd],[col,A.y+2*A.vd]],vals:A.vd>0?[touch,open]:[open,touch],o:"v"}; A.y+=2*A.vd; A.dir=1; A.x=col+1; }
+  const spots=spotsFor(side);
+  const sp=(opts.dir&&spots.find(x=>x.dir===opts.dir))||spots[0];
+  const rec={cells:sp.cells,vals:sp.first?[touch,open]:[open,touch],o:sp.o};
+  {
+    if(A.dx&&!sp.dx) A.px=A.dx;                        // lembra de onde veio ao subir/descer
+    A.dx=sp.dx; A.dy=sp.dy; const last=sp.first?sp.cells[1]:sp.cells[0]; A.hx=last[0]; A.hy=last[1];
   }
   rec.t=t.slice(); rec.owner=owner; rec.wild=t[0]<0; rec.forced=!!opts.force&&touch!==A.end;
   rec.lr=side==="L"?[open,touch]:[touch,open];
   A.end=open;
   if(side==="L") chain.unshift(rec); else chain.push(rec);
   return rec;
-}
-// próxima posição de cada ponta (para o “fantasma” de onde a pedra vai)
-function nextSpot(side){
-  if(!chain.length) return {cells:C0(),o:"h"};
-  const A=arms[side];
-  if(A.dir>0) return A.x+1<=TW-1?{cells:[[A.x,A.y],[A.x+1,A.y]],o:"h"}:{cells:[[A.x-1,A.y+A.vd],[A.x-1,A.y+2*A.vd]],o:"v"};
-  return A.x-1>=0?{cells:[[A.x-1,A.y],[A.x,A.y]],o:"h"}:{cells:[[A.x+1,A.y+A.vd],[A.x+1,A.y+2*A.vd]],o:"v"};
 }
 const seenCount=n=>{ let c=0; chain.forEach(r=>{ if(!r.wild&&(r.t[0]===n||r.t[1]===n)) c++; }); return c; };
 
@@ -2004,7 +2046,7 @@ function playTile(pi,t,side,opts){
   sched(()=>nextTurn(), cfg.anim?Math.max(320,240*SPD()):20);
 }
 let flyFrom=null, dropFrom=null;
-function humanPlay(i,side){
+function humanPlay(i,side,dir){
   if(done||busy||turn!==0||mode!=="play") return false;
   const t=hand[i]; if(!t) return false;
   if(bannedFor(0,t)){ msg(`Número proibido nesta mão: ${banNum}.`,"bad"); sfx.bad(); return false; }
@@ -2014,6 +2056,7 @@ function humanPlay(i,side){
     else { rejectSide(side); return false; }
   }
   if(!chain.length) side="R";
+  if(dir) opts=Object.assign({},opts||{},{dir});
   { const el=document.querySelectorAll("#hand .tile.big")[i]; if(dropFrom&&Date.now()-dropFrom.at<400) flyFrom=dropFrom; else if(el){ const r=el.getBoundingClientRect(); flyFrom={x:r.left+r.width/2,y:r.top+r.height/2,rot:0}; } }
   hand.splice(i,1); sel=null;
   playTile(0,t,side,opts); return true;
@@ -2116,7 +2159,7 @@ function say(pi,t){ talk[pi]={t,until:Date.now()+1600}; renderSeats(); setTimeou
 function tableGeom(){
   const box=$("table"); const W=box.clientWidth, H=box.clientHeight;
   const cells=[]; chain.forEach(r=>r.cells.forEach(c=>cells.push(c)));
-  if(!done&&turn===0&&mode==="play"){ ["L","R"].forEach(s=>{ if(chain.length||s==="R") nextSpot(s).cells.forEach(c=>cells.push(c)); }); }
+  if(!done&&turn===0&&mode==="play"){ ["L","R"].forEach(s=>{ if(chain.length||s==="R") spotsFor(s).forEach(sp=>sp.cells.forEach(c=>cells.push(c))); }); }
   if(!cells.length) cells.push(...C0());
   let x0=Math.min(...cells.map(c=>c[0])), x1=Math.max(...cells.map(c=>c[0]))+1, y0=Math.min(...cells.map(c=>c[1])), y1=Math.max(...cells.map(c=>c[1]))+1;
   x0=Math.min(x0,0); x1=Math.max(x1,TW); y0=Math.min(y0,-TW/2); y1=Math.max(y1,TW/2);
@@ -2164,12 +2207,24 @@ function renderTable(){
     const t=hand[sel];
     const sides=chain.length?["L","R"]:["C"];
     sides.forEach(s=>{
-      const spot=nextSpot(s==="C"?"R":s);
       const ok=s==="C"||fits(t,s)||(ponteArmed&&!(lockEnd&&lockEnd.side===s));
-      const el=mtEl({cells:spot.cells,o:spot.o,vals:[0,0]},g,"ghostend"+(ok?" ok":" no"));
-      el.innerHTML=ok?"<b>+</b>":"<b>✕</b>"; el.dataset.side=s;
-      el.onclick=()=>{ if(ok) humanPlay(sel,s==="C"?"R":s); else rejectSide(s); };
-      box.appendChild(el);
+      const spots=s==="C"?[nextSpot("R")]:ok?spotsFor(s):[nextSpot(s)];
+      const many=spots.length>1;
+      spots.forEach((spot,k)=>{
+        const key=s+k, dir=spot.dir||"s";
+        const el=mtEl({cells:spot.cells,o:spot.o,vals:[0,0]},g,"ghostend"+(ok?" ok":" no")+(dir!=="s"?" turn":"")+(many?" gshape":""));
+        el.dataset.side=s; el.dataset.dir=dir; el.dataset.key=key;
+        const play=()=>{ if(ok) humanPlay(sel,s==="C"?"R":s,dir); else rejectSide(s); };
+        if(!many){ el.innerHTML=ok?"<b>+</b>":"<b>✕</b>"; el.onclick=play; box.appendChild(el); return; }
+        // várias opções dividem a casa colada na ponta: o toque fica só na casa que é de cada uma
+        el.innerHTML=""; box.appendChild(el);
+        const u=spot.first?spot.cells[1]:spot.cells[0], h=document.createElement("div");
+        h.className="ghostend ghit ok"; h.dataset.side=s; h.dataset.dir=dir; h.dataset.key=key;
+        h.style.left=(g.ox+u[0]*g.s)+"px"; h.style.top=(g.oy+u[1]*g.s)+"px"; h.style.width=h.style.height=g.s+"px";
+        h.innerHTML="<b>+</b>"; h.onclick=play;
+        h.onmouseenter=()=>el.classList.add("hover"); h.onmouseleave=()=>el.classList.remove("hover");
+        box.appendChild(h);
+      });
     });
   }
   // cadeado e números das pontas
@@ -2183,7 +2238,7 @@ function renderTable(){
 function rejectSide(s){
   sfx.bad(); buzz([30,40,30]);
   const bw=document.querySelector(".boardwrap"); if(bw&&cfg.anim){ bw.classList.remove("shake"); void bw.offsetWidth; bw.classList.add("shake"); setTimeout(()=>bw.classList.remove("shake"),340); }
-  const el=document.querySelector(`#table .ghostend[data-side="${s}"]`); if(el){ el.classList.remove("nope"); void el.offsetWidth; el.classList.add("nope"); }
+  document.querySelectorAll(`#table .ghostend[data-side="${s}"]`).forEach(el=>{ el.classList.remove("nope"); void el.offsetWidth; el.classList.add("nope"); });
 }
 function backsHTML(p,i){
   const peek=Date.now()<peekUntil||done, n=p.hand.length, mid=(n-1)/2;
@@ -2401,13 +2456,14 @@ function dragMove(ev){
   if(!drag) return; drag.x=ev.clientX; drag.y=ev.clientY;
   const gEl=ghostAt(ev.clientX,ev.clientY+drag.h*.3)||ghostAt(ev.clientX,ev.clientY);
   document.querySelectorAll("#table .ghostend.hover").forEach(x=>x.classList.remove("hover"));
-  if(gEl) gEl.classList.add("hover"); drag.over=gEl;
+  if(gEl){ gEl.classList.add("hover"); if(gEl.dataset.key) document.querySelectorAll(`#table .gshape[data-key="${gEl.dataset.key}"]`).forEach(x=>x.classList.add("hover")); }
+  drag.over=gEl;
 }
 function endDrag(drop){
   const dd=drag; if(!dd) return; cancelAnimationFrame(dd.raf); drag=null;
   const gEl=drop?dd.over:null;
   if(gEl){ dropFrom={x:dd.x,y:dd.y+dd.h*.3,rot:dd.ang||0,at:Date.now()}; }
-  if(gEl){ const s=gEl.dataset.side; dd.g.remove(); if(gEl.classList.contains("ok")){ if(humanPlay(sel,s==="C"?"R":s)) return; } else rejectSide(s); render(); return; }
+  if(gEl){ const s=gEl.dataset.side; dd.g.remove(); if(gEl.classList.contains("ok")){ if(humanPlay(sel,s==="C"?"R":s,gEl.dataset.dir)) return; } else rejectSide(s); render(); return; }
   dd.g.classList.add("back");
   dd.g.style.transform=`translate(${dd.home.left}px,${dd.home.top}px) rotate(0deg) scale(1)`; dd.g.style.opacity="0";
   setTimeout(()=>dd.g.remove(),220); render();
