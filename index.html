@@ -1005,6 +1005,7 @@ body.widegame .opps.m3 .pos-r .seat-hand{transform:perspective(520px) rotateY(-2
 .oninp::placeholder{color:rgba(201,213,238,.55)}
 .oninp.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:24px;font-weight:700}
 .onrow{margin:12px 0;font-size:16px}
+.onrow small{font-size:12px}
 #on-mode button{min-width:0;padding:10px 4px}
 #on-mode .pk-art{gap:3px}
 #on-mode .pk-art i{width:12px;height:24px}
@@ -1033,7 +1034,9 @@ body.widegame .opps.m3 .pos-r .seat-hand{transform:perspective(520px) rotateY(-2
 .lbseat.empty{color:#c9d5ee;border-style:dashed;cursor:pointer}
 .lbseat.empty:hover{border-color:rgba(245,178,68,.6)}
 .lbseat.empty .av{background:rgba(255,255,255,.1)}
-body.netgame .money2,body.netgame .roundtrack,body.netgame #infobtn,body.netgame #runinfo,body.netgame .rail{display:none!important}
+body.netgame .roundtrack,body.netgame #infobtn,body.netgame #runinfo,body.netgame:not(.netshop) .money2,body.netgame:not(.netshop) .rail{display:none!important}
+.he-gain{margin:-4px 0 8px;color:var(--gold);font-weight:700}
+#skip:disabled{opacity:.6}
 body.netgame .hudbtns{grid-template-columns:1fr}
 .opp-seat.ally .nm b{color:var(--green)}
 .he-btns{display:flex;flex-direction:column;gap:8px}
@@ -1192,6 +1195,7 @@ body.no-anim #home.h2 *{animation:none!important}
           <button data-v="ffa"><span class="pk-art"><i></i><i class="bk"></i><i class="bk"></i><i class="bk"></i></span><b>Todos</b><small>4 na mesa, cada um por si</small></button>
         </div>
         <div class="srow onrow"><span>Meta de pontos</span><div class="seg" id="on-target"><button data-v="50">50</button><button data-v="100">100</button><button data-v="200">200</button></div></div>
+        <div class="srow onrow"><span>Coringas e loja<small>loja entre as mãos, igual contra os bots</small></span><button class="sw" id="on-shop" role="switch" aria-checked="true"></button></div>
         <button class="btn" id="on-create">Criar sala</button>
         <div class="ondiv"><span>ou</span></div>
         <div class="setlbl">Entrar numa sala</div>
@@ -1228,7 +1232,8 @@ body.no-anim #home.h2 *{animation:none!important}
       <li>Os amigos tocam em <b>Entrar numa sala</b> e digitam o código, ou abrem o link que o anfitrião enviou.</li>
       <li><b>1×1</b>: dois jogadores, 14 pedras no banco. <b>2×2</b>: duplas com o parceiro na sua frente, e a dupla soma os pontos das mãos adversárias. <b>Todos</b>: quatro na mesa, cada um por si.</li>
       <li>No 2×2 e no Todos, vagas livres viram bots. Se alguém cair, um bot assume o lugar até a pessoa voltar com o mesmo nome.</li>
-      <li>Online não tem coringas nem loja: vence quem chegar primeiro à meta de pontos.</li></ul></div>
+      <li>Com <b>Coringas e loja</b> ligado, cada um começa com $8 e escolhe 1 coringa. Depois de cada mão todo mundo ganha $2, e quem venceu ganha mais $3. A loja abre para todos e a mão seguinte começa quando todos tocarem em <b>Pronto</b>.</li>
+      <li>No 2×2, os coringas de pontos valem para a dupla. Vence quem chegar primeiro à meta de pontos.</li></ul></div>
   </section>
   <section id="settings" class="hidden">
     <div class="shead"><button class="mini" id="setback">← Voltar</button><h2>Configurações</h2></div>
@@ -1652,7 +1657,7 @@ function showPop(i,pinned){
   document.querySelectorAll("#jokers .rs").forEach(x=>x.classList.toggle("on",pinned&&x===slot));
   p.style.setProperty("--c",RC[j.r]);
   p.innerHTML=`<div class="oi">${jtile(j,42)}</div><div class="ot"><span class="tag">${R[j.r]}${j.act?" · ATIVO":" · PASSIVO"}</span><b>${j.n}</b><span class="ds">${j.d}</span></div>`+
-    (pinned&&mode==="shop"?`<button class="pbtn sellb" id="sellb">Vender por +$${sell(j)}</button>`:"")+(pinned&&j.act&&mode==="play"?(()=>{const c=canUse(j);return `<button class="pbtn sellb usej" id="usej" ${c.ok?"":"disabled"}>${c.ok?"Usar":c.why}</button>`;})():"");
+    (pinned&&mode==="shop"&&!(NET.on&&NET.shopWait)?`<button class="pbtn sellb" id="sellb">Vender por +$${sell(j)}</button>`:"")+(pinned&&j.act&&mode==="play"?(()=>{const c=canUse(j);return `<button class="pbtn sellb usej" id="usej" ${c.ok?"":"disabled"}>${c.ok?"Usar":c.why}</button>`;})():"");
   p.classList.remove("hidden");
   const r=slot.getBoundingClientRect(), ph=p.offsetHeight||90, pw=p.offsetWidth||230;
   const top=Math.max(8,Math.min(window.innerHeight-ph-8,r.top+r.height/2-ph/2));
@@ -1701,6 +1706,11 @@ const JOKERS = [
   {id:"vulcao",i:"",r:"l",n:"Erupção",d:"ATIVO (1× por mão): todos os oponentes perdem a próxima vez",act:1}
 ];
 const has=id=>jokers.some(j=>j.id===id);
+// coringas de cada jogador (no solo só o jogador 0 tem; online cada um tem os seus)
+function jkOf(pi){ if(!NET.on||(NET.role==="host"&&pi===0)) return pi===0?jokers.map(j=>j.id):[]; return (P[pi]&&P[pi].jk)||[]; }
+const hasP=(pi,id)=>jkOf(pi).includes(id);
+const sideOf=i=>NET.on&&NET.mode==="2x2"?i%2:i;          // no 2×2 os parceiros formam um lado
+function addPts(pi,v){ P.forEach((p,i)=>{ if(sideOf(i)===sideOf(pi)) p.score+=v; }); }
 
 // ---------- desafios (por nível) ----------
 const CH=[
@@ -1818,7 +1828,8 @@ function newHand(first){
   const hs=()=>7; // 7 pedras para cada um; no 1×1 sobram 14 no banco
   P.forEach((p,i)=>{ for(let k=0;k<hs(i);k++) p.hand.push(deck.pop()); });
   bank=deck; hand=P[0].hand; sortHand();
-  if(has("purista")) P.forEach((p,i)=>{ if(p.bot&&p.hand.length) p.reveal=p.hand[Math.floor(Math.random()*p.hand.length)]; });
+  if(NET.on) netHandReset();
+  else if(has("purista")) P.forEach((p,i)=>{ if(p.bot&&p.hand.length) p.reveal=p.hand[Math.floor(Math.random()*p.hand.length)]; });
   // quem começa
   if(first||lastWin<0){
     let best=-1,who=0;
@@ -1857,7 +1868,7 @@ function humanTurnStart(){
 const canBuy=pi=>bank.length>0&&!(pi===0&&(chs[round-1]||{}).nobuy);
 function drawFor(pi){
   if(!bank.length) return null;
-  if(pi===0&&has("seis")&&bank.length>=2){
+  if(hasP(pi,"seis")&&bank.length>=2){
     const a=bank.pop(), b=bank.pop();
     const ok=t=>chain.length===0||["L","R"].some(s=>fits(t,s));
     let keep=a, back=b;
@@ -1886,7 +1897,7 @@ function humanPass(){
 function doPass(pi){
   const e=endsOf(); if(e){ P[pi].lacks.add(e.L); P[pi].lacks.add(e.R); }
   busy=true; P[pi].passed++; passStreak++;
-  if(pi===0&&has("moldura")){ P[0].score+=3; }
+  if(hasP(pi,"moldura")){ addPts(pi,3); }
   say(pi,"passou"); sfx.uns();
   if(passStreak>=P.length){ endHand(null,"lock"); return; }
   render(); sched(()=>nextTurn(), cfg.anim?500*SPD():20);
@@ -1935,13 +1946,15 @@ function playTile(pi,t,side,opts){
   passStreak=0; busy=true;
   const rec=layTile(t,side,pi,opts); rec.fresh=true;
   if(pi===0&&isDbl(t)) dblPlayed++;
+  if(NET.on&&isDbl(t)) P[pi].dbl=(P[pi].dbl||0)+1;
   sfx.play(); buzz(pi===0?18:0);
   const ch=chs[round-1]||{};
   // Mesa Travada: a cada 4 pedras, uma ponta tranca por uma volta
   if(ch.lock&&chain.length>1&&chain.length%4===0){ const s=Math.random()<.5?"L":"R"; lockEnd={side:s,turns:P.length}; say(pi,"🔒 ponta trancada"); }
   // Bucha de Ouro
-  if(pi===0&&isDbl(t)&&has("dupla")&&P.length>1){ const nx=1; if(bank.length){ drawFor(nx); say(nx,"comprou 1 (Bucha)"); } else { P[nx].skip++; } }
+  if(isDbl(t)&&hasP(pi,"dupla")&&P.length>1){ const nx=NET.on?(pi+1)%P.length:1; if(bank.length){ drawFor(nx); say(nx,"comprou 1 (Bucha)"); } else { P[nx].skip++; } }
   if(P[pi].reveal&&P[pi].reveal===t) P[pi].reveal=P[pi].hand[0]||null;
+  if(NET.on) P.forEach(v=>{ if(v.rev&&v.rev[pi]===t) v.rev[pi]=P[pi].hand[0]||null; });
   render(true);
   // batida
   if(!P[pi].hand.length){ endHand(pi,"bat",t,side); return; }
@@ -1958,7 +1971,7 @@ function humanPlay(i,side){
     else { rejectSide(side); return false; }
   }
   if(!chain.length) side="R";
-  if(NET.on&&NET.role==="client"){ netSend({t:"act",a:"play",tile:t,side}); sel=null; busy=true; render(); return true; }
+  if(NET.on&&NET.role==="client"){ netSend({t:"act",a:"play",tile:t,side,force:!!opts}); sel=null; busy=true; render(); return true; }
   hand.splice(i,1); sel=null;
   playTile(0,t,side,opts); return true;
 }
@@ -2040,6 +2053,7 @@ function canUse(j){
   return {ok:true};
 }
 function useJoker(j){
+  if(NET.on) return netJokerLocal(j);
   const c=canUse(j); if(!c.ok){ msg(c.why,"bad"); sfx.bad(); return; }
   used[j.id]=true; sfx.buy(); buzz(15);
   const ix=jokers.indexOf(j); setTimeout(()=>restartFx(document.querySelector(`#jokers .rs[data-j="${ix}"]`),"trig"),0);
@@ -2194,7 +2208,7 @@ function render(fromPlay){
 }
 function renderShop(){
   $("shoprndline").textContent=`Nível ${round} de ${MAXR}`;
-  const locked=firstShop&&bought>=FIRST_LIMIT, o=$("offer"); o.innerHTML="";
+  const waiting=NET.on&&NET.shopWait, locked=(firstShop&&bought>=FIRST_LIMIT)||waiting, o=$("offer"); o.innerHTML="";
   offer.forEach((j,oi)=>{
     const p=PRICE[j.r], d=document.createElement("div"); d.className="slot"+(shopSel===j?" on":"")+(dealShop?" deal":"");
     if(dealShop) d.style.animationDelay=(oi*.12)+"s";
@@ -2208,7 +2222,7 @@ function renderShop(){
   const si=$("shopinfo");
   if(shopSel&&offer.includes(shopSel)){
     const j=shopSel, p=PRICE[j.r];
-    const why=locked?"Limite de 1 coringa na loja inicial":jokers.length>=SLOTS?"Slots cheios: venda um coringa seu":coins<p?"Moedas insuficientes":"";
+    const why=waiting?"Você já tocou em Pronto":locked?"Limite de 1 coringa na loja inicial":jokers.length>=SLOTS?"Slots cheios: venda um coringa seu":coins<p?"Moedas insuficientes":"";
     si.style.setProperty("--c",RC[j.r]);
     si.innerHTML=`<div class="jstage">${jtile(j,66)}</div><span class="tag">${R[j.r]}${j.act?" · ATIVO":" · PASSIVO"}</span><b>${j.n}</b><span class="ds">${j.d}</span>${why?`<span class="why">${why}</span>`:""}<button class="btn buy" id="buy" ${why?"disabled":""}>Comprar $${p}</button>`;
     $("buy").onclick=()=>{const src=document.querySelector("#offer .slot.on .jt2"); const sr=src&&src.getBoundingClientRect(); coins-=p;jokers.push(j);bought++;offer=offer.filter(q=>q!==j);shopSel=null;sfx.buy();buzz(15);render(); flyToSlot(j,sr,jokers.length-1);};
@@ -2216,6 +2230,7 @@ function renderShop(){
   $("shopnote").textContent=firstShop?(locked?"Coringa inicial escolhido. Pode começar!":"Você pode comprar apenas 1 coringa para começar a run."):"";
   const rc=2+rerolls; $("reroll").innerHTML="Reroll<br>$"+rc; $("reroll").disabled=locked||coins<rc;
   $("skip").innerHTML=firstShop?"Começar<br>partida":"Próximo<br>nível";
+  if(NET.on){ netRenderShop(); return; }
   const nc=chs[round-1]; $("nextch").innerHTML=`<span class="rn">${nc.boss?"Nível chefe":"Desafio do nível"} ${round}</span><b>⚠ ${nc.n}</b><span>${nc.d} · meta ${target()} pts</span>`;
 }
 function renderResult(){
@@ -2254,7 +2269,7 @@ function openShop(title){
   mode="shop"; rerolls=0; bought=0; shopSel=null; pickOffer(); dealShop=true;
   $("shoptitle").textContent=title; msg(""); render();
 }
-$("skip").onclick=()=>{ firstShop=false; startLevel(); };
+$("skip").onclick=()=>{ if(NET.on){ netShopReady(); return; } firstShop=false; startLevel(); };
 $("reroll").onclick=()=>{const rc=2+rerolls;if(coins<rc)return;coins-=rc;rerolls++;shopSel=null;pickOffer();dealShop=true;sfx.sel();render();};
 $("dbtn").onclick=()=>humanBuy();
 $("rot").onclick=()=>humanPass();
@@ -2545,7 +2560,7 @@ function buildHome2(){
 // =====================================================================
 const NMODES={"1x1":{N:2,n:"1×1",bots:false},"2x2":{N:4,n:"2×2",bots:true},"ffa":{N:4,n:"Todos contra todos",bots:true}};
 const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789", PEER_PRE="dmn-sala-", PEERJS_URL="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js";
-Object.assign(NET,{on:false,role:null,code:"",mode:"1x1",target:100,seats:[],peer:null,conns:new Map(),me:null,hostConn:null,pidE:{},end:null,lobby:null,hb:0,qT:0,leaving:false,lastKey:""});
+Object.assign(NET,{on:false,role:null,code:"",mode:"1x1",target:100,shop:true,phase:"play",shopId:0,shopWait:false,seats:[],peer:null,conns:new Map(),me:null,hostConn:null,pidE:{},end:null,lobby:null,hb:0,qT:0,leaving:false,lastKey:""});
 const cleanName=s=>String(s||"").replace(/[<>&"'`\\]/g,"").replace(/\s+/g," ").trim().slice(0,12);
 const cleanTxt=s=>String(s||"").replace(/[<>&"'`\\]/g,"").slice(0,40);
 const num=v=>{ v=+v; return Number.isFinite(v)?Math.round(v):0; };
@@ -2594,7 +2609,9 @@ function onPick(){
   const m=cfg.netMode||"1x1", t=cfg.netTarget||100;
   document.querySelectorAll("#on-mode button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
   document.querySelectorAll("#on-target button").forEach(b=>b.classList.toggle("on",+b.dataset.v===t));
+  $("on-shop").setAttribute("aria-checked",cfg.netShop!==false?"true":"false");
 }
+$("on-shop").onclick=()=>{ cfg.netShop=cfg.netShop===false; save(); onPick(); sfx.sel(); };
 document.querySelectorAll("#on-mode button").forEach(b=>b.onclick=()=>{ cfg.netMode=b.dataset.v; save(); onPick(); sfx.sel(); });
 document.querySelectorAll("#on-target button").forEach(b=>b.onclick=()=>{ cfg.netTarget=+b.dataset.v; save(); onPick(); sfx.sel(); });
 $("on-name").oninput=()=>{ cfg.netName=cleanName($("on-name").value); save(); };
@@ -2630,14 +2647,14 @@ $("lb-share").onclick=()=>{
 $("lb-start").onclick=()=>hostStart();
 
 // ---------- sala (lobby) ----------
-const lobbyMsg=()=>({t:"lobby",code:NET.code,mode:NET.mode,target:NET.target,seats:NET.seats.map(x=>x&&{pid:x.pid,name:x.name})});
+const lobbyMsg=()=>({t:"lobby",code:NET.code,mode:NET.mode,target:NET.target,shop:!!NET.shop,seats:NET.seats.map(x=>x&&{pid:x.pid,name:x.name})});
 function hostLobbyPush(){ NET.lobby=lobbyMsg(); for(const c of NET.conns.values()) try{ c.send(NET.lobby); }catch(e){} renderLobby(); }
 function renderLobby(){
   const L=NET.lobby; if(!L) return;
   $("on-menu").classList.add("hidden"); $("on-lobby").classList.remove("hidden");
   $("ontitle").textContent="Sala "+L.code; $("lb-code").textContent=L.code;
   const M=NMODES[L.mode]||NMODES["1x1"], host=NET.role==="host";
-  $("lb-modelbl").textContent=`Mesa ${M.n} · meta ${L.target} pts`;
+  $("lb-modelbl").textContent=`Mesa ${M.n} · meta ${L.target} pts · ${L.shop?"com coringas e loja":"sem coringas"}`;
   const seatEl=(x,s)=>{ const me=x&&x.pid===NET.me, isH=x&&x.pid==="H";
     return `<button class="lbseat${x?"":" empty"}${me?" me":""}" data-s="${s}"><span class="av" style="--c:${AV_COL[s%3]}">${x?cleanName(x.name)[0]||"?":"+"}</span><span>${x?cleanName(x.name):M.bots?"Vaga livre (bot)":"Vaga livre"}</span><em>${x?(isH?"👑 anfitrião":"")+(me?" · você":""):"tocar para sentar"}</em></button>`; };
   const S=L.seats;
@@ -2667,7 +2684,7 @@ function hostCreate(tries){
     const code=newCode(), peer=new Peer(PEER_PRE+code,peerOpts());
     let opened=false;
     peer.on("open",()=>{ opened=true; $("on-create").disabled=false;
-      NET.role="host"; NET.peer=peer; NET.code=code; NET.me="H"; NET.mode=cfg.netMode||"1x1"; NET.target=cfg.netTarget||100; NET.leaving=false;
+      NET.role="host"; NET.peer=peer; NET.code=code; NET.me="H"; NET.mode=cfg.netMode||"1x1"; NET.target=cfg.netTarget||100; NET.shop=cfg.netShop!==false; NET.shopId=0; NET.leaving=false;
       NET.seats=Array(NMODES[NET.mode].N).fill(null); NET.seats[0]={pid:"H",name:myName()};
       onStatus(""); heartbeat(); hostLobbyPush(); sfx.buy(); });
     peer.on("connection",c=>hostConn(c));
@@ -2712,6 +2729,7 @@ function hostDrop(c){
   const e=NET.pidE[pid]; if(e===undefined) return; delete NET.pidE[pid];
   const p=P[e]; p.remote=false; p.bot=true; p.dropped=true; p.skill=2;
   say(e,"caiu: um bot assumiu"); msg(`${p.real} saiu. Um bot joga no lugar até ele voltar.`,"bad");
+  if(NET.phase==="shop"){ netShopCheck(); return; }
   if(turn===e&&!done&&!busy&&mode==="play"){ busy=true; sched(()=>botTurn(e),700); }
   render();
 }
@@ -2722,46 +2740,132 @@ function hostStart(){
 }
 function netMatch(){
   // monta a mesa a partir das cadeiras, girando para que o anfitrião seja o índice 0
-  cancelTurns(); jokers=[]; chs=[]; round=1; coins=0; jSel=null; summary=null; NET.end=null;
+  cancelTurns(); chs=[]; round=1; jSel=null; summary=null; NET.end=null; NET.phase="play";
+  jokers=[]; coins=NET.shop?8:0;
   const N=NET.seats.length, hs=NET.seats.findIndex(x=>x&&x.pid==="H"), bots=shuffle(BOT_NAMES.slice());
+  const fresh=()=>({hand:[],score:0,passed:0,lacks:new Set(),skip:0,skill:2,jk:[],coins:NET.shop?8:0,used:{},dbl:0,streak:0});
   if(!P.length||P.length!==N||!NET.rematch){
     P=[]; NET.pidE={};
     for(let e=0;e<N;e++){
-      const x=NET.seats[(hs+e)%N], base={hand:[],score:0,passed:0,lacks:new Set(),skip:0,skill:2};
+      const x=NET.seats[(hs+e)%N], base=fresh();
       if(!x) P.push({...base,name:bots.pop(),real:null,bot:true});
       else if(x.pid==="H") P.push({...base,name:"Você",real:x.name,bot:false});
       else { P.push({...base,name:x.name,real:x.name,bot:false,remote:true,pid:x.pid}); NET.pidE[x.pid]=e; }
     }
     P.forEach(p=>{ if(p.bot&&!p.real) p.real=p.name; });
-  } else P.forEach(p=>{ p.score=0; });
+  } else P.forEach(p=>{ const f=fresh(); p.score=0; p.jk=f.jk; p.coins=f.coins; p.streak=0; });
   NET.rematch=false;
   gameMode=N-1; diff=1; mode="play"; handNo=0; streak=0; handsWon=0; lastWin=-1;
-  newHand(true);
+  if(NET.shop) netShopOpen(true); else newHand(true);
+}
+function netHandReset(){
+  // zera o que é de cada mão e sorteia as pedras reveladas pelo Olho de Cristal
+  P.forEach(p=>{ p.used={}; p.dbl=0; p.ponte=false; p.peekUntil=0; p.rev={}; p.note=""; });
+  P.forEach((v,vi)=>{ if(!hasP(vi,"purista")) return;
+    P.forEach((o,oi)=>{ if(sideOf(oi)!==sideOf(vi)&&o.hand.length) v.rev[oi]=o.hand[Math.floor(Math.random()*o.hand.length)]; }); });
+  P.forEach((o,oi)=>{ o.reveal=P[0].rev[oi]||null; });
 }
 function hostAct(pid,m){
   const e=NET.pidE[pid], resync=()=>hostPush(true);
-  if(e===undefined||done||mode!=="play"||turn!==e||busy) return resync();
+  if(m.a==="ready") return hostReady(e,m);
+  if(e===undefined||done||mode!=="play"||NET.phase!=="play"||turn!==e||busy) return resync();
   const h=P[e].hand;
   if(m.a==="play"){
     const tv=Array.isArray(m.tile)?m.tile.map(num):[], i=h.findIndex(t=>t[0]===tv[0]&&t[1]===tv[1]);
     if(i<0) return resync();
-    let side=m.side==="L"?"L":"R";
-    if(chain.length&&!fits(h[i],side)) return resync();
-    const t=h.splice(i,1)[0]; playTile(e,t,side); return;
+    let side=m.side==="L"?"L":"R", opts=null;
+    if(chain.length&&!fits(h[i],side)){
+      if(m.force&&P[e].ponte&&!(lockEnd&&lockEnd.side===side)){ opts={force:true}; P[e].ponte=false; } else return resync();
+    }
+    const t=h.splice(i,1)[0]; playTile(e,t,side,opts); return;
   }
   if(m.a==="buy"){ if(movesFor(e).length||!canBuy(e)) return resync(); drawFor(e); say(e,"comprou"); render(); return; }
   if(m.a==="pass"){ if(movesFor(e).length||canBuy(e)) return resync(); doPass(e); return; }
+  if(m.a==="joker"){ if(!netUseJoker(e,String(m.id||""),Array.isArray(m.tile)?m.tile.map(num):null)) resync(); return; }
   resync();
+}
+// ---------- coringas ativos online ----------
+function netJokerLocal(j){
+  const c=canUse(j); if(!c.ok){ msg(c.why,"bad"); sfx.bad(); return; }
+  const tile=sel!==null&&hand[sel]?hand[sel].slice():null;
+  if(NET.role==="host"){ if(!netUseJoker(0,j.id,tile)){ msg("Não deu para usar agora.","bad"); sfx.bad(); return; } }
+  else { netSend({t:"act",a:"joker",id:j.id,tile}); busy=true; }
+  sfx.buy(); buzz(15);
+  const ix=jokers.indexOf(j); setTimeout(()=>restartFx(document.querySelector(`#jokers .rs[data-j="${ix}"]`),"trig"),0);
+  jSel=null; hidePop(); render();
+}
+function netUseJoker(e,id,tile){
+  const p=P[e], N=P.length, J=JOKERS.find(x=>x.id===id);
+  if(!J||!J.act||!hasP(e,id)||(p.used&&p.used[id])) return false;
+  const opp=P.map((_,i)=>i).filter(i=>sideOf(i)!==sideOf(e)), h=p.hand, nm=i=>i===e?"você":(P[i].real||P[i].name);
+  const ti=tile?h.findIndex(t=>t[0]===tile[0]&&t[1]===tile[1]):-1;
+  let note="";
+  if(id==="espelho"){ p.peekUntil=Date.now()+3000; if(e===0) peekUntil=p.peekUntil; note="Espiando as mãos por 3 segundos…";
+    setTimeout(()=>{ if(e===0&&!done&&peekUntil<Date.now()+99999) peekUntil=0; render(); },3050); }
+  else if(id==="solitario"){ if(ti<0) return false; const ok=opp.filter(i=>P[i].hand.length); if(!ok.length) return false;
+    const o=ok[Math.floor(Math.random()*ok.length)], oh=P[o].hand, k=Math.floor(Math.random()*oh.length), mine=h[ti]; h[ti]=oh[k]; oh[k]=mine; note=`Trocou uma pedra com ${nm(o)}.`; }
+  else if(id==="basico"){ h.push([-1,-1]); note="Você ganhou uma Pedra Coringa ★."; }
+  else if(id==="primeira"){ const nx=(e+1)%N; P[nx].skip++; note=`${nm(nx)} vai perder a próxima vez.`; }
+  else if(id==="zero"){ if(ti<0||!bank.length) return false; const t=h.splice(ti,1)[0]; bank.splice(Math.floor(Math.random()*(bank.length+1)),0,t); drawFor(e); note="Pedra reciclada."; }
+  else if(id==="longa"){ if(!chain.length) return false; p.ponte=true; if(e===0) ponteArmed=true; note="Ponte armada: a próxima pedra pode entrar numa ponta que não combina."; }
+  else if(id==="vulcao"){ opp.forEach(i=>P[i].skip++); note="Erupção! Os adversários perdem a próxima vez."; }
+  else return false;
+  p.used[id]=true; if(e===0){ used[id]=true; sel=null; sortHand(); msg(note); } else p.note=note;
+  say(e,"usou "+J.n); render(); return true;
+}
+// ---------- loja online ----------
+function netShopOpen(first){
+  NET.phase="shop"; NET.shopId=(NET.shopId||0)+1; NET.first=!!first; NET.ready=new Set();
+  P.forEach((p,i)=>{ if(p.bot) NET.ready.add(i); });
+  NET.end=null; $("handend").classList.add("hidden"); peekUntil=0;
+  netLocalShop(first); hostPush(true);
+}
+function netLocalShop(first){
+  mode="shop"; rerolls=0; bought=0; shopSel=null; firstShop=!!first; NET.shopWait=false; jSel=null;
+  pickOffer(); dealShop=true;
+  $("shoptitle").textContent=first?"Escolha seu coringa inicial":"Reforce seus coringas para a próxima mão";
+  msg(""); render();
+}
+function netShopReady(){
+  if(!NET.on||mode!=="shop"||NET.shopWait) return;
+  NET.shopWait=true; shopSel=null; sfx.sel();
+  if(NET.role==="host"){ NET.ready.add(0); render(); netShopCheck(); }
+  else { netSend({t:"act",a:"ready",jk:jokers.map(j=>j.id),coins}); render(); }
+}
+function hostReady(e,m){
+  if(e===undefined||NET.phase!=="shop") return;
+  const ids=[...new Set((Array.isArray(m.jk)?m.jk:[]).map(String))].filter(id=>JOKERS.some(j=>j.id===id)).slice(0,SLOTS);
+  P[e].jk=ids; P[e].coins=Math.max(0,Math.min(999,num(m.coins)));
+  NET.ready.add(e); netShopCheck();
+}
+function netShopCheck(){
+  if(NET.role!=="host"||NET.phase!=="shop") return;
+  if(P.every((p,i)=>p.bot||NET.ready.has(i))){
+    NET.phase="play"; NET.shopWait=false; firstShop=false; mode="play";
+    newHand(NET.first||lastWin<0);
+  } else { hostPush(); if(mode==="shop") render(); }
+}
+const waitNames=()=>P.filter((p,i)=>!p.bot&&!(NET.ready&&NET.ready.has(i))).map(p=>p.real||p.name);
+function netRenderShop(){
+  $("shoprndline").textContent=`Antes da mão ${handNo+1}`;
+  if(firstShop) $("shopnote").textContent=bought>=FIRST_LIMIT?"Coringa inicial escolhido. Toque em Pronto!":"Você pode comprar apenas 1 coringa para começar a partida.";
+  $("skip").innerHTML=NET.shopWait?"Esperando<br>os outros":"Pronto ▶"; $("skip").disabled=!!NET.shopWait;
+  const w=(NET.role==="host"?waitNames():NET.waitNames||[]).map(cleanName);
+  $("nextch").innerHTML=`<span class="rn">Partida online · meta ${NET.target} pts</span><b>${NET.shopWait?"Pronto!":"Toque em Pronto quando terminar"}</b><span>${w.length?"Esperando: "+w.join(", "):"Todos prontos"}</span>`;
 }
 function snapFor(e){
   const N=P.length, R=k=>(e+k)%N, V=i=>(i===null||i===undefined||i<0)?null:((i-e)%N+N)%N, rot=a=>a.map((_,k)=>a[R(k)]);
-  const E=NET.end;
-  return {t:"state",hn:handNo,turn:V(turn),done,busy:busy||turn!==e,TW,arms,bankN:bank.length,
+  const E=NET.end, me=P[e], peek=Date.now()<(me.peekUntil||0);
+  const s={t:"state",hn:handNo,turn:V(turn),done,busy:busy||turn!==e,TW,arms,bankN:bank.length,
     chain:chain.map(r=>({cells:r.cells,vals:r.vals,o:r.o,t:r.t,wild:!!r.wild})),
-    P:Array.from({length:N},(_,k)=>{ const p=P[R(k)]; return {name:k===0?"Você":p.real||p.name,bot:!!p.bot,n:p.hand.length,hand:(k===0||done)?p.hand:null,score:p.score,skip:p.skip||0,lacks:[...p.lacks]}; }),
+    P:Array.from({length:N},(_,k)=>{ const p=P[R(k)], rv=me.rev&&me.rev[R(k)]; return {name:k===0?"Você":p.real||p.name,bot:!!p.bot,n:p.hand.length,hand:(k===0||done||peek)?p.hand:null,rev:k>0&&rv?rv:null,score:p.score,skip:p.skip||0,lacks:[...p.lacks]}; }),
     talk:Array.from({length:N},(_,k)=>{ const x=talk[R(k)]; return x&&x.until>Date.now()?{t:x.t,ms:x.until-Date.now()}:null; }),
-    end:E&&{...E,winner:V(E.winner),won:rot(E.won),champ:rot(E.champ)},
-    info:{mode:NET.mode,target:NET.target,code:NET.code}};
+    end:E&&{...E,winner:V(E.winner),won:rot(E.won),champ:rot(E.champ),gain:rot(E.gain||[])},
+    info:{mode:NET.mode,target:NET.target,code:NET.code,shop:!!NET.shop},
+    phase:NET.phase||"play",shopId:NET.shopId||0,first:!!NET.first,wait:NET.phase==="shop"?waitNames():[],
+    coins:me.coins||0,jk:me.jk||[],used:me.used||{},ponte:!!me.ponte,peek:peek?me.peekUntil-Date.now():0,note:me.note||""};
+  me.note="";
+  return s;
 }
 function hostPush(now){
   if(NET.role!=="host"||!NET.on) return;
@@ -2773,23 +2877,40 @@ function hostPush(now){
 // ---------- fim de mão (online) ----------
 function netEndHand(winner,how,lastT){
   done=true; busy=true; cancelTurns();
-  const team=NET.mode==="2x2", side=i=>team?i%2:i, hp=P.map(p=>handPips(p.hand));
+  const hp=P.map(p=>handPips(p.hand)), bl=[];
   let ws=null, kind=how, bonus=0, pts=0;
   if(how==="lock"||how==="short"){
-    const sides=[...new Set(P.map((_,i)=>side(i)))], sums=sides.map(s=>P.reduce((a,_,i)=>side(i)===s?a+hp[i]:a,0)), min=Math.min(...sums);
-    const c=sides.filter((_,k)=>sums[k]===min);
-    if(c.length===1){ ws=c[0]; pts=sums.reduce((a,v,k)=>sides[k]===ws?a:a+v,0); winner=P.map((_,i)=>i).filter(i=>side(i)===ws).sort((a,b)=>hp[a]-hp[b])[0]; }
+    const sides=[...new Set(P.map((_,i)=>sideOf(i)))], sums=sides.map(s=>P.reduce((a,_,i)=>sideOf(i)===s?a+hp[i]:a,0)), min=Math.min(...sums);
+    let c=sides.filter((_,k)=>sums[k]===min);
+    const amp=P.map((_,i)=>i).filter(i=>hasP(i,"ampulheta")&&sums[sides.indexOf(sideOf(i))]<=min+5).map(sideOf);
+    if(amp.length&&!(c.length===1&&c[0]===amp[0])){ c=[amp[0]]; bl.push("Ampulheta"); }
+    if(c.length===1){ ws=c[0]; pts=sums.reduce((a,v,k)=>sides[k]===ws?a:a+v,0); winner=P.map((_,i)=>i).filter(i=>sideOf(i)===ws).sort((a,b)=>hp[a]-hp[b])[0]; }
     else winner=null;
     kind="lock";
   } else {
-    ws=side(winner); pts=P.reduce((a,_,i)=>side(i)===ws?a:a+hp[i],0);
+    ws=sideOf(winner); pts=P.reduce((a,_,i)=>sideOf(i)===ws?a:a+hp[i],0);
     const both=chain.length>1&&lastT&&lastT[0]>=0&&(()=>{ const e=endsOf(); return e.L===e.R; })(), d=isDbl(lastT||[0,1]);
     if(d&&both){kind="cruz";bonus=20;} else if(both){kind="lalo";bonus=10;} else if(d){kind="bucha";bonus=5;} else kind="bat";
     pts+=bonus;
   }
-  if(ws!==null){ P.forEach((p,i)=>{ if(side(i)===ws) p.score+=pts; }); lastWin=winner; }
+  P.forEach((p,i)=>{ p.streak=ws!==null&&sideOf(i)===ws?(p.streak||0)+1:0; });
+  if(ws!==null){
+    // coringas de quem está no lado vencedor
+    P.forEach((p,i)=>{ if(sideOf(i)!==ws) return;
+      if(bonus&&hasP(i,"rei")){ pts+=20; bl.push("Rei da Batida +20"); }
+      if(hasP(i,"alta")){ pts+=10; bl.push("Chama +10"); }
+      if(hasP(i,"cresc")&&p.streak>1){ const v=5*(p.streak-1); pts+=v; bl.push(`Bola de Neve +${v}`); }
+      if(hasP(i,"cinco")&&p.dbl){ pts+=5*p.dbl; bl.push(`Estrela +${5*p.dbl}`); }
+      if(hasP(i,"ultimo")&&how==="bat"&&P.some((q,k)=>sideOf(k)!==ws&&q.hand.length===1)){ pts+=20; bl.push("Último Suspiro +20"); }
+    });
+    P.forEach((p,i)=>{ if(sideOf(i)===ws) p.score+=pts; }); lastWin=winner;
+  }
+  // moedas para a loja: $2 para todos, +$3 para quem venceu a mão, mais Cofrinho e Juros
+  const gain=P.map((p,i)=>{ if(!NET.shop) return 0; const won=ws!==null&&sideOf(i)===ws, c=i===0?coins:(p.coins||0);
+    return 2+(won?3:0)+(won&&hasP(i,"cofrinho")?2:0)+(hasP(i,"juros")?Math.min(5,Math.floor(c/5)):0); });
+  gain.forEach((g,i)=>{ if(i===0) coins+=g; else P[i].coins=(P[i].coins||0)+g; });
   const champ=P.map(p=>p.score>=NET.target);
-  NET.end={how:kind,bonus,pts,winner,won:P.map((_,i)=>ws!==null&&side(i)===ws),champ,over:champ.some(Boolean)};
+  NET.end={how:kind,bonus,pts,winner,won:P.map((_,i)=>ws!==null&&sideOf(i)===ws),champ,over:champ.some(Boolean),bl,gain};
   peekUntil=Date.now()+99999999;
   render(); showNetEnd(NET.end); hostPush(true);
 }
@@ -2797,21 +2918,23 @@ const KIND={bat:"Batida",bucha:"Batida de bucha",lalo:"Lá e lô",cruz:"Cruzada"
 function showNetEnd(E){
   const box=$("handend"); if(!E){ box.classList.add("hidden"); return; }
   const team=NET.mode==="2x2", nm=i=>i===0?"Você":P[i].name, host=NET.role==="host";
-  const how=KIND[E.how]?E.how:"lock", pts=num(E.pts), bonus=num(E.bonus);
+  const how=KIND[E.how]?E.how:"lock", pts=num(E.pts), bonus=num(E.bonus), bl=(E.bl||[]).slice(0,12).map(cleanTxt);
   let title, txt;
   if(how==="lock") txt=E.winner===null?"Mesa trancada: empate, ninguém pontua.":`Mesa trancada: ${team?(E.won[0]?"sua dupla":"a dupla adversária"):nm(E.winner)} tinha menos pontos na mão. +${pts} pontos.`;
   else txt=`${nm(E.winner)} bateu! ${KIND[how]}${bonus?` (+${bonus})`:""}. +${pts} pontos${team?" para a dupla":""}.`;
+  if(bl.length) txt+=` Coringas: ${bl.join(", ")}.`;
   if(E.over){
     const w=P.map((_,i)=>i).filter(i=>E.champ[i]);
     title=E.champ[0]?(team?"Sua dupla venceu a partida! 🏆":"Você venceu a partida! 🏆"):(team?"A dupla adversária venceu a partida":`${w.map(nm).join(" e ")} venceu a partida`);
   } else title=E.winner===null?"Mão empatada":E.won[0]?(E.winner===0?"Você venceu a mão!":"Sua dupla venceu a mão!"):(team?"A dupla adversária venceu a mão":`${nm(E.winner)} venceu a mão`);
-  const T=NET.target;
+  const T=NET.target, g=num((E.gain||[])[0]);
   const rows=P.map((p,i)=>`<div class="he-row${E.won[i]?" win":""}"><span>${p.name}${team?` <small>· ${(i%2)?"adversário":"sua dupla"}</small>`:""}</span><i>${handPips(p.hand)} na mão</i><b>${p.score} / ${T}</b></div>`).join("");
-  const btn=host?`<button class="btn" id="henext">${E.over?"Jogar de novo ▶":"Próxima mão ▶"}</button>`:`<button class="btn" id="henext" disabled>Esperando o anfitrião…</button>`;
+  const shopNext=NET.shop&&!E.over;
+  const btn=host?`<button class="btn" id="henext">${E.over?"Jogar de novo ▶":shopNext?"Ir para a loja ▶":"Próxima mão ▶"}</button>`:`<button class="btn" id="henext" disabled>Esperando o anfitrião…</button>`;
   box.classList.remove("hidden");
-  box.innerHTML=`<h3>${title}</h3><p>${txt}</p><div class="he-rows">${rows}</div><div class="he-btns">${btn}${E.over?`<button class="btn alt" id="heleave">Sair da sala</button>`:""}</div>`;
+  box.innerHTML=`<h3>${title}</h3><p>${txt}</p>${NET.shop&&g&&!E.over?`<p class="he-gain">+$${g} para gastar na loja</p>`:""}<div class="he-rows">${rows}</div><div class="he-btns">${btn}${E.over?`<button class="btn alt" id="heleave">Sair da sala</button>`:""}</div>`;
   if(host) $("henext").onclick=()=>{ box.classList.add("hidden"); peekUntil=0;
-    if(E.over){ NET.rematch=true; netMatch(); } else { NET.end=null; newHand(false); } };
+    if(E.over){ NET.rematch=true; netMatch(); } else if(NET.shop) netShopOpen(false); else { NET.end=null; newHand(false); } };
   const lv=$("heleave"); if(lv) lv.onclick=()=>{ netLeave(); openOnline(); };
   if(E.champ[0]||E.won[0]) sfx.win(); else sfx.bad();
 }
@@ -2844,33 +2967,49 @@ function clientData(m){
   if(m.t==="no"){ const w=cleanTxt(m.why)||"Não deu para entrar."; netLeave(); openOnline(); onStatus(w,true); sfx.bad(); return; }
   if(m.t==="bye"){ clientLost("O anfitrião encerrou a sala."); return; }
   if(m.t==="lobby"){
-    NET.lobby={code:cleanTxt(m.code),mode:NMODES[m.mode]?m.mode:"1x1",target:num(m.target)||100,seats:(m.seats||[]).slice(0,4).map(x=>x&&{pid:String(x.pid),name:cleanName(x.name)})};
-    NET.mode=NET.lobby.mode; NET.target=NET.lobby.target;
+    NET.lobby={code:cleanTxt(m.code),mode:NMODES[m.mode]?m.mode:"1x1",target:num(m.target)||100,shop:!!m.shop,seats:(m.seats||[]).slice(0,4).map(x=>x&&{pid:String(x.pid),name:cleanName(x.name)})};
+    NET.mode=NET.lobby.mode; NET.target=NET.lobby.target; NET.shop=NET.lobby.shop;
     if(!NET.on){ if($("online").classList.contains("hidden")) screen("online"); onStatus(""); renderLobby(); }
     return;
   }
   if(m.t==="state") clientApply(m);
 }
 function clientApply(s){
-  const first=!NET.on;
+  const first=!NET.on, shopPhase=s.phase==="shop";
   if(first){ NET.on=true; document.body.classList.add("netgame"); show(true); }
-  if(s.info){ NET.mode=NMODES[s.info.mode]?s.info.mode:NET.mode; NET.target=num(s.info.target)||NET.target; NET.code=cleanTxt(s.info.code)||NET.code; }
+  if(s.info){ NET.mode=NMODES[s.info.mode]?s.info.mode:NET.mode; NET.target=num(s.info.target)||NET.target; NET.code=cleanTxt(s.info.code)||NET.code; NET.shop=!!s.info.shop; }
   const prevHn=first?-1:handNo, prevKeys=new Set(chain.map(r=>r.t+"|"+r.cells)), prevHand=hand.map(t=>t+""), selT=sel!==null&&hand[sel]?hand[sel]+"":null;
   const T2=a=>Array.isArray(a)?[num(a[0]),num(a[1])]:[0,0];
-  P=(s.P||[]).slice(0,4).map((x,k)=>({name:k===0?"Você":cleanName(x.name)||"?",bot:!!x.bot,remote:!x.bot,
+  P=(s.P||[]).slice(0,4).map((x,k)=>{ const p={name:k===0?"Você":cleanName(x.name)||"?",bot:!!x.bot,remote:!x.bot,
     hand:x.hand?x.hand.slice(0,30).map(T2):Array.from({length:Math.min(30,num(x.n))},()=>[0,0]),
-    score:num(x.score),skill:2,skip:num(x.skip),passed:0,lacks:new Set((x.lacks||[]).map(num)),reveal:null}));
+    score:num(x.score),skill:2,skip:num(x.skip),passed:0,lacks:new Set((x.lacks||[]).map(num)),reveal:null};
+    if(!x.hand&&x.rev&&p.hand.length){ p.hand[0]=T2(x.rev); p.reveal=p.hand[0]; }
+    return p; });
   if(!P.length) return;
-  hand=P[0].hand; sortHand(); gameMode=P.length-1; mode="play";
+  hand=P[0].hand; sortHand(); gameMode=P.length-1;
   handNo=num(s.hn); turn=num(s.turn); done=!!s.done; busy=!!s.busy; TW=num(s.TW)||12;
   const A=s.arms||{}, arm=a=>({x:num(a&&a.x),y:num(a&&a.y),dir:num(a&&a.dir)||1,vd:num(a&&a.vd)||1,end:a&&a.end!==null&&a.end!==undefined?num(a.end):null});
   arms={L:arm(A.L),R:arm(A.R)};
   let fresh=0;
-  chain=(s.chain||[]).slice(0,28).map(r=>{ const rec={cells:(r.cells||[]).slice(0,2).map(T2),vals:T2(r.vals),o:r.o==="v"?"v":"h",t:T2(r.t),wild:!!r.wild};
-    rec.fresh=handNo===prevHn&&!prevKeys.has(rec.t+"|"+rec.cells); if(rec.fresh) fresh++; return rec; });
+  chain=(s.chain||[]).slice(0,30).map(r=>{ const rec={cells:(r.cells||[]).slice(0,2).map(T2),vals:T2(r.vals),o:r.o==="v"?"v":"h",t:T2(r.t),wild:!!r.wild};
+    rec.fresh=!shopPhase&&handNo===prevHn&&!prevKeys.has(rec.t+"|"+rec.cells); if(rec.fresh) fresh++; return rec; });
   bank=new Array(Math.min(28,num(s.bankN))).fill(0);
-  lockEnd=null; banNum=null; ponteArmed=false; jokers=[]; chs=[]; used={};
-  peekUntil=done?Date.now()+99999999:0;
+  lockEnd=null; banNum=null; chs=[];
+  const myJokers=()=>(s.jk||[]).slice(0,SLOTS).map(id=>JOKERS.find(j=>j.id===id)).filter(Boolean);
+  // ---- fase de loja: cada um compra no próprio aparelho ----
+  if(shopPhase){
+    NET.waitNames=(s.wait||[]).slice(0,4).map(cleanName);
+    $("handend").classList.add("hidden");
+    if(num(s.shopId)!==NET.shopId){ NET.shopId=num(s.shopId); coins=num(s.coins); jokers=myJokers(); netLocalShop(!!s.first); }
+    else if(mode==="shop") render();
+    return;
+  }
+  NET.shopWait=false; mode="play";
+  coins=num(s.coins); jokers=myJokers(); used={}; Object.keys(s.used||{}).forEach(k=>{ if(s.used[k]) used[String(k)]=true; });
+  ponteArmed=!!s.ponte;
+  const pk=num(s.peek);
+  peekUntil=done?Date.now()+99999999:pk>0?Date.now()+pk:0;
+  if(pk>0&&!done) setTimeout(()=>{ if(NET.on&&!done) render(); },pk+60);
   sel=selT?hand.findIndex(t=>t+""===selT):null; if(sel!==null&&sel<0) sel=null;
   (s.talk||[]).forEach((x,k)=>{ if(x&&k>0) talk[k]={t:cleanTxt(x.t),until:Date.now()+Math.min(3000,num(x.ms))}; else if(k>0) delete talk[k]; });
   render(fresh>0);
@@ -2882,9 +3021,11 @@ function clientApply(s){
     const left=prevHand.slice(), nw=[]; hand.forEach((t,k)=>{ const j=left.indexOf(t+""); if(j>=0) left.splice(j,1); else nw.push(k); });
     if(nw.length) setTimeout(()=>chestOut(nw,0),0);
   }
-  if(!done&&turn===0&&!busy){ const key=handNo+":"+chain.length+":"+hand.length; if(key!==NET.lastKey){ NET.lastKey=key; if(handNo===prevHn) humanTurnStart(); else setTimeout(()=>{ if(NET.on&&turn===0&&!done) humanTurnStart(); },1200); } }
+  const note=cleanTxt(s.note);
+  if(note) msg(note);
+  else if(!done&&turn===0&&!busy){ const key=handNo+":"+chain.length+":"+hand.length; if(key!==NET.lastKey){ NET.lastKey=key; if(handNo===prevHn) humanTurnStart(); else setTimeout(()=>{ if(NET.on&&turn===0&&!done) humanTurnStart(); },1200); } }
   showNetEnd(done&&s.end?{how:String(s.end.how),bonus:num(s.end.bonus),pts:num(s.end.pts),winner:s.end.winner===null||s.end.winner===undefined?null:num(s.end.winner),
-    won:(s.end.won||[]).map(Boolean),champ:(s.end.champ||[]).map(Boolean),over:!!s.end.over}:null);
+    won:(s.end.won||[]).map(Boolean),champ:(s.end.champ||[]).map(Boolean),over:!!s.end.over,bl:(s.end.bl||[]).map(String),gain:(s.end.gain||[]).map(num)}:null);
 }
 function clientLost(why){
   if(NET.role!=="client"||NET.leaving) return;
@@ -2900,7 +3041,9 @@ function netLeave(){
   setTimeout(()=>{ conns.forEach(c=>{ try{c.close();}catch(e){} }); if(hc) try{hc.close();}catch(e){} if(peer) try{peer.destroy();}catch(e){} },r==="host"?250:0);
   if(NET.on){ cancelTurns(); mode=null; }
   Object.assign(NET,{on:false,role:null,peer:null,conns:new Map(),hostConn:null,pidE:{},end:null,lobby:null,qT:0,lastKey:"",rematch:false});
-  document.body.classList.remove("netgame"); $("handend").classList.add("hidden");
+  document.body.classList.remove("netgame","netshop"); $("handend").classList.add("hidden");
+  Object.assign(NET,{phase:"play",shopId:0,shopWait:false,ready:null,waitNames:[]});
+  if(mode==="shop"||!$("game").classList.contains("hidden")){ mode=null; jokers=[]; coins=0; }
 }
 window.addEventListener("pagehide",()=>{ if(NET.role) netLeave(); });
 
@@ -2910,6 +3053,7 @@ render=function(f){
   renderSolo(f);
   if(!NET.on) return;
   const M=NMODES[NET.mode]||NMODES["1x1"], team=NET.mode==="2x2";
+  document.body.classList.toggle("netshop",!!NET.shop);
   const tk=document.querySelector(".ticket"); if(tk){ tk.classList.remove("boss"); const lb=tk.querySelector(".tk-lbl"); if(lb) lb.textContent="PARTIDA ONLINE"; }
   $("bname").textContent=`${M.n} · sala ${NET.code}`;
   $("bdesc").textContent=team?`A dupla que chegar a ${NET.target} pontos vence`:`Quem chegar a ${NET.target} pontos vence`;
