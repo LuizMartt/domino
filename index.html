@@ -1036,6 +1036,7 @@ body.widegame .opps.m3 .pos-r .seat-hand{transform:perspective(520px) rotateY(-2
 .lbseat.empty .av{background:rgba(255,255,255,.1)}
 body.netgame .roundtrack,body.netgame #infobtn,body.netgame #runinfo,body.netgame:not(.netshop) .money2,body.netgame:not(.netshop) .rail{display:none!important}
 .he-gain{margin:-4px 0 8px;color:var(--gold);font-weight:700}
+.he-rw{font-size:11px;letter-spacing:-2px}
 #skip:disabled{opacity:.6}
 body.netgame .hudbtns{grid-template-columns:1fr}
 .opp-seat.ally .nm b{color:var(--green)}
@@ -1195,7 +1196,8 @@ body.no-anim #home.h2 *{animation:none!important}
           <button data-v="ffa"><span class="pk-art"><i></i><i class="bk"></i><i class="bk"></i><i class="bk"></i></span><b>Todos</b><small>4 na mesa, cada um por si</small></button>
         </div>
         <div class="srow onrow"><span>Meta de pontos</span><div class="seg" id="on-target"><button data-v="50">50</button><button data-v="100">100</button><button data-v="200">200</button></div></div>
-        <div class="srow onrow"><span>Coringas e loja<small>loja entre as mãos, igual contra os bots</small></span><button class="sw" id="on-shop" role="switch" aria-checked="true"></button></div>
+        <div class="srow onrow"><span>Rodadas<small id="on-roundsnote">loja com coringas entre as rodadas</small></span><div class="seg" id="on-rounds"><button data-v="1">1</button><button data-v="3">Md3</button><button data-v="5">Md5</button></div></div>
+        <div class="srow onrow" id="on-shoprow"><span>Coringas<small>cada um escolhe 1 coringa antes de começar</small></span><button class="sw" id="on-shop" role="switch" aria-checked="true"></button></div>
         <button class="btn" id="on-create">Criar sala</button>
         <div class="ondiv"><span>ou</span></div>
         <div class="setlbl">Entrar numa sala</div>
@@ -1232,8 +1234,10 @@ body.no-anim #home.h2 *{animation:none!important}
       <li>Os amigos tocam em <b>Entrar numa sala</b> e digitam o código, ou abrem o link que o anfitrião enviou.</li>
       <li><b>1×1</b>: dois jogadores, 14 pedras no banco. <b>2×2</b>: duplas com o parceiro na sua frente, e a dupla soma os pontos das mãos adversárias. <b>Todos</b>: quatro na mesa, cada um por si.</li>
       <li>No 2×2 e no Todos, vagas livres viram bots. Se alguém cair, um bot assume o lugar até a pessoa voltar com o mesmo nome.</li>
-      <li>Com <b>Coringas e loja</b> ligado, cada um começa com $8 e escolhe 1 coringa. Depois de cada mão todo mundo ganha $2, e quem venceu ganha mais $3. A loja abre para todos e a mão seguinte começa quando todos tocarem em <b>Pronto</b>.</li>
-      <li>No 2×2, os coringas de pontos valem para a dupla. Vence quem chegar primeiro à meta de pontos.</li></ul></div>
+      <li>Cada <b>rodada</b> é uma corrida até a meta de pontos. Na <b>melhor de 3</b> (ou de 5), leva a partida quem vencer 2 (ou 3) rodadas.</li>
+      <li>Com mais de uma rodada, a primeira é sem coringas. Cada mão rende $2 (+$3 para quem venceu a mão, +$4 para quem fechou a rodada), e entre as rodadas a loja abre para todos. A próxima rodada começa quando todos tocarem em <b>Pronto</b>.</li>
+      <li>Com 1 rodada, dá para escolher jogar com ou sem coringas. Com coringas, cada um escolhe 1 coringa inicial com $8.</li>
+      <li>No 2×2, os coringas de pontos valem para a dupla.</li></ul></div>
   </section>
   <section id="settings" class="hidden">
     <div class="shead"><button class="mini" id="setback">← Voltar</button><h2>Configurações</h2></div>
@@ -2560,7 +2564,7 @@ function buildHome2(){
 // =====================================================================
 const NMODES={"1x1":{N:2,n:"1×1",bots:false},"2x2":{N:4,n:"2×2",bots:true},"ffa":{N:4,n:"Todos contra todos",bots:true}};
 const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789", PEER_PRE="dmn-sala-", PEERJS_URL="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js";
-Object.assign(NET,{on:false,role:null,code:"",mode:"1x1",target:100,shop:true,phase:"play",shopId:0,shopWait:false,seats:[],peer:null,conns:new Map(),me:null,hostConn:null,pidE:{},end:null,lobby:null,hb:0,qT:0,leaving:false,lastKey:""});
+Object.assign(NET,{on:false,role:null,code:"",mode:"1x1",target:100,shop:true,rounds:3,round:1,phase:"play",shopId:0,shopWait:false,seats:[],peer:null,conns:new Map(),me:null,hostConn:null,pidE:{},end:null,lobby:null,hb:0,qT:0,leaving:false,lastKey:""});
 const cleanName=s=>String(s||"").replace(/[<>&"'`\\]/g,"").replace(/\s+/g," ").trim().slice(0,12);
 const cleanTxt=s=>String(s||"").replace(/[<>&"'`\\]/g,"").slice(0,40);
 const num=v=>{ v=+v; return Number.isFinite(v)?Math.round(v):0; };
@@ -2610,7 +2614,12 @@ function onPick(){
   document.querySelectorAll("#on-mode button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
   document.querySelectorAll("#on-target button").forEach(b=>b.classList.toggle("on",+b.dataset.v===t));
   $("on-shop").setAttribute("aria-checked",cfg.netShop!==false?"true":"false");
+  const r=[1,3,5].includes(cfg.netRounds)?cfg.netRounds:3;
+  document.querySelectorAll("#on-rounds button").forEach(b=>b.classList.toggle("on",+b.dataset.v===r));
+  $("on-shoprow").classList.toggle("hidden",r>1);
+  $("on-roundsnote").textContent=r>1?`vence quem ganhar ${Math.ceil(r/2)} rodadas · loja entre elas`:"uma corrida até a meta";
 }
+document.querySelectorAll("#on-rounds button").forEach(b=>b.onclick=()=>{ cfg.netRounds=+b.dataset.v; save(); onPick(); sfx.sel(); });
 $("on-shop").onclick=()=>{ cfg.netShop=cfg.netShop===false; save(); onPick(); sfx.sel(); };
 document.querySelectorAll("#on-mode button").forEach(b=>b.onclick=()=>{ cfg.netMode=b.dataset.v; save(); onPick(); sfx.sel(); });
 document.querySelectorAll("#on-target button").forEach(b=>b.onclick=()=>{ cfg.netTarget=+b.dataset.v; save(); onPick(); sfx.sel(); });
@@ -2647,14 +2656,14 @@ $("lb-share").onclick=()=>{
 $("lb-start").onclick=()=>hostStart();
 
 // ---------- sala (lobby) ----------
-const lobbyMsg=()=>({t:"lobby",code:NET.code,mode:NET.mode,target:NET.target,shop:!!NET.shop,seats:NET.seats.map(x=>x&&{pid:x.pid,name:x.name})});
+const lobbyMsg=()=>({t:"lobby",code:NET.code,mode:NET.mode,target:NET.target,shop:!!NET.shop,rounds:NET.rounds,seats:NET.seats.map(x=>x&&{pid:x.pid,name:x.name})});
 function hostLobbyPush(){ NET.lobby=lobbyMsg(); for(const c of NET.conns.values()) try{ c.send(NET.lobby); }catch(e){} renderLobby(); }
 function renderLobby(){
   const L=NET.lobby; if(!L) return;
   $("on-menu").classList.add("hidden"); $("on-lobby").classList.remove("hidden");
   $("ontitle").textContent="Sala "+L.code; $("lb-code").textContent=L.code;
   const M=NMODES[L.mode]||NMODES["1x1"], host=NET.role==="host";
-  $("lb-modelbl").textContent=`Mesa ${M.n} · meta ${L.target} pts · ${L.shop?"com coringas e loja":"sem coringas"}`;
+  $("lb-modelbl").textContent=`Mesa ${M.n} · ${L.rounds>1?`melhor de ${L.rounds} rodadas`:"1 rodada"} de ${L.target} pts · ${L.rounds>1?"loja entre as rodadas":L.shop?"com coringas":"sem coringas"}`;
   const seatEl=(x,s)=>{ const me=x&&x.pid===NET.me, isH=x&&x.pid==="H";
     return `<button class="lbseat${x?"":" empty"}${me?" me":""}" data-s="${s}"><span class="av" style="--c:${AV_COL[s%3]}">${x?cleanName(x.name)[0]||"?":"+"}</span><span>${x?cleanName(x.name):M.bots?"Vaga livre (bot)":"Vaga livre"}</span><em>${x?(isH?"👑 anfitrião":"")+(me?" · você":""):"tocar para sentar"}</em></button>`; };
   const S=L.seats;
@@ -2684,7 +2693,7 @@ function hostCreate(tries){
     const code=newCode(), peer=new Peer(PEER_PRE+code,peerOpts());
     let opened=false;
     peer.on("open",()=>{ opened=true; $("on-create").disabled=false;
-      NET.role="host"; NET.peer=peer; NET.code=code; NET.me="H"; NET.mode=cfg.netMode||"1x1"; NET.target=cfg.netTarget||100; NET.shop=cfg.netShop!==false; NET.shopId=0; NET.leaving=false;
+      NET.role="host"; NET.peer=peer; NET.code=code; NET.me="H"; NET.mode=cfg.netMode||"1x1"; NET.target=cfg.netTarget||100; NET.rounds=[1,3,5].includes(cfg.netRounds)?cfg.netRounds:3; NET.shop=NET.rounds>1||cfg.netShop!==false; NET.shopId=0; NET.leaving=false;
       NET.seats=Array(NMODES[NET.mode].N).fill(null); NET.seats[0]={pid:"H",name:myName()};
       onStatus(""); heartbeat(); hostLobbyPush(); sfx.buy(); });
     peer.on("connection",c=>hostConn(c));
@@ -2740,10 +2749,11 @@ function hostStart(){
 }
 function netMatch(){
   // monta a mesa a partir das cadeiras, girando para que o anfitrião seja o índice 0
-  cancelTurns(); chs=[]; round=1; jSel=null; summary=null; NET.end=null; NET.phase="play";
-  jokers=[]; coins=NET.shop?8:0;
+  cancelTurns(); chs=[]; round=1; jSel=null; summary=null; NET.end=null; NET.phase="play"; NET.round=1;
+  const c0=NET.shop&&NET.rounds===1?8:0;                 // 1 rodada com coringas: $8 para o coringa inicial
+  jokers=[]; coins=c0;
   const N=NET.seats.length, hs=NET.seats.findIndex(x=>x&&x.pid==="H"), bots=shuffle(BOT_NAMES.slice());
-  const fresh=()=>({hand:[],score:0,passed:0,lacks:new Set(),skip:0,skill:2,jk:[],coins:NET.shop?8:0,used:{},dbl:0,streak:0});
+  const fresh=()=>({hand:[],score:0,passed:0,lacks:new Set(),skip:0,skill:2,jk:[],coins:c0,used:{},dbl:0,streak:0,rw:0});
   if(!P.length||P.length!==N||!NET.rematch){
     P=[]; NET.pidE={};
     for(let e=0;e<N;e++){
@@ -2753,10 +2763,14 @@ function netMatch(){
       else { P.push({...base,name:x.name,real:x.name,bot:false,remote:true,pid:x.pid}); NET.pidE[x.pid]=e; }
     }
     P.forEach(p=>{ if(p.bot&&!p.real) p.real=p.name; });
-  } else P.forEach(p=>{ const f=fresh(); p.score=0; p.jk=f.jk; p.coins=f.coins; p.streak=0; });
+  } else P.forEach(p=>{ const f=fresh(); p.score=0; p.jk=f.jk; p.coins=f.coins; p.streak=0; p.rw=0; });
   NET.rematch=false;
   gameMode=N-1; diff=1; mode="play"; handNo=0; streak=0; handsWon=0; lastWin=-1;
-  if(NET.shop) netShopOpen(true); else newHand(true);
+  if(NET.shop&&NET.rounds===1) netShopOpen(true); else newHand(true);
+}
+function netNextRound(){
+  NET.round++; NET.end=null; P.forEach(p=>{ p.score=0; p.streak=0; });
+  if(NET.shop) netShopOpen(false); else newHand(false);
 }
 function netHandReset(){
   // zera o que é de cada mão e sorteia as pedras reveladas pelo Olho de Cristal
@@ -2823,7 +2837,7 @@ function netShopOpen(first){
 function netLocalShop(first){
   mode="shop"; rerolls=0; bought=0; shopSel=null; firstShop=!!first; NET.shopWait=false; jSel=null;
   pickOffer(); dealShop=true;
-  $("shoptitle").textContent=first?"Escolha seu coringa inicial":"Reforce seus coringas para a próxima mão";
+  $("shoptitle").textContent=first?"Escolha seu coringa inicial":`Rodada ${NET.round} de ${NET.rounds}: compre coringas para jogar contra os outros`;
   msg(""); render();
 }
 function netShopReady(){
@@ -2847,7 +2861,7 @@ function netShopCheck(){
 }
 const waitNames=()=>P.filter((p,i)=>!p.bot&&!(NET.ready&&NET.ready.has(i))).map(p=>p.real||p.name);
 function netRenderShop(){
-  $("shoprndline").textContent=`Antes da mão ${handNo+1}`;
+  $("shoprndline").textContent=firstShop?"Antes da partida":`Antes da rodada ${NET.round}`;
   if(firstShop) $("shopnote").textContent=bought>=FIRST_LIMIT?"Coringa inicial escolhido. Toque em Pronto!":"Você pode comprar apenas 1 coringa para começar a partida.";
   $("skip").innerHTML=NET.shopWait?"Esperando<br>os outros":"Pronto ▶"; $("skip").disabled=!!NET.shopWait;
   const w=(NET.role==="host"?waitNames():NET.waitNames||[]).map(cleanName);
@@ -2858,10 +2872,10 @@ function snapFor(e){
   const E=NET.end, me=P[e], peek=Date.now()<(me.peekUntil||0);
   const s={t:"state",hn:handNo,turn:V(turn),done,busy:busy||turn!==e,TW,arms,bankN:bank.length,
     chain:chain.map(r=>({cells:r.cells,vals:r.vals,o:r.o,t:r.t,wild:!!r.wild})),
-    P:Array.from({length:N},(_,k)=>{ const p=P[R(k)], rv=me.rev&&me.rev[R(k)]; return {name:k===0?"Você":p.real||p.name,bot:!!p.bot,n:p.hand.length,hand:(k===0||done||peek)?p.hand:null,rev:k>0&&rv?rv:null,score:p.score,skip:p.skip||0,lacks:[...p.lacks]}; }),
+    P:Array.from({length:N},(_,k)=>{ const p=P[R(k)], rv=me.rev&&me.rev[R(k)]; return {name:k===0?"Você":p.real||p.name,bot:!!p.bot,n:p.hand.length,hand:(k===0||done||peek)?p.hand:null,rev:k>0&&rv?rv:null,score:p.score,rw:p.rw||0,skip:p.skip||0,lacks:[...p.lacks]}; }),
     talk:Array.from({length:N},(_,k)=>{ const x=talk[R(k)]; return x&&x.until>Date.now()?{t:x.t,ms:x.until-Date.now()}:null; }),
-    end:E&&{...E,winner:V(E.winner),won:rot(E.won),champ:rot(E.champ),gain:rot(E.gain||[])},
-    info:{mode:NET.mode,target:NET.target,code:NET.code,shop:!!NET.shop},
+    end:E&&{...E,winner:V(E.winner),won:rot(E.won),champ:rot(E.champ),rw:rot(E.rw||[]),gain:rot(E.gain||[])},
+    info:{mode:NET.mode,target:NET.target,code:NET.code,shop:!!NET.shop,rounds:NET.rounds,round:NET.round},
     phase:NET.phase||"play",shopId:NET.shopId||0,first:!!NET.first,wait:NET.phase==="shop"?waitNames():[],
     coins:me.coins||0,jk:me.jk||[],used:me.used||{},ponte:!!me.ponte,peek:peek?me.peekUntil-Date.now():0,note:me.note||""};
   me.note="";
@@ -2905,12 +2919,15 @@ function netEndHand(winner,how,lastT){
     });
     P.forEach((p,i)=>{ if(sideOf(i)===ws) p.score+=pts; }); lastWin=winner;
   }
-  // moedas para a loja: $2 para todos, +$3 para quem venceu a mão, mais Cofrinho e Juros
-  const gain=P.map((p,i)=>{ if(!NET.shop) return 0; const won=ws!==null&&sideOf(i)===ws, c=i===0?coins:(p.coins||0);
-    return 2+(won?3:0)+(won&&hasP(i,"cofrinho")?2:0)+(hasP(i,"juros")?Math.min(5,Math.floor(c/5)):0); });
+  // fim da rodada: quem chegou à meta ganha a rodada; a partida acaba com a maioria das rodadas
+  const champ=P.map(p=>p.score>=NET.target), roundOver=champ.some(Boolean), need=Math.ceil(NET.rounds/2);
+  if(roundOver){ const rs=sideOf(champ.indexOf(true)); P.forEach((p,i)=>{ if(sideOf(i)===rs) p.rw=(p.rw||0)+1; }); }
+  const over=P.some(p=>(p.rw||0)>=need);
+  // moedas para a loja entre as rodadas: $2 por mão, +$3 para quem venceu a mão, +$4 para quem venceu a rodada, mais Cofrinho e Juros
+  const gain=P.map((p,i)=>{ if(!NET.shop||NET.rounds<2) return 0; const won=ws!==null&&sideOf(i)===ws, c=i===0?coins:(p.coins||0);
+    return 2+(won?3:0)+(roundOver&&champ[i]?4:0)+(won&&hasP(i,"cofrinho")?2:0)+(hasP(i,"juros")?Math.min(5,Math.floor(c/5)):0); });
   gain.forEach((g,i)=>{ if(i===0) coins+=g; else P[i].coins=(P[i].coins||0)+g; });
-  const champ=P.map(p=>p.score>=NET.target);
-  NET.end={how:kind,bonus,pts,winner,won:P.map((_,i)=>ws!==null&&sideOf(i)===ws),champ,over:champ.some(Boolean),bl,gain};
+  NET.end={how:kind,bonus,pts,winner,won:P.map((_,i)=>ws!==null&&sideOf(i)===ws),champ,roundOver,over,round:NET.round,rw:P.map(p=>p.rw||0),bl,gain};
   peekUntil=Date.now()+99999999;
   render(); showNetEnd(NET.end); hostPush(true);
 }
@@ -2923,18 +2940,22 @@ function showNetEnd(E){
   if(how==="lock") txt=E.winner===null?"Mesa trancada: empate, ninguém pontua.":`Mesa trancada: ${team?(E.won[0]?"sua dupla":"a dupla adversária"):nm(E.winner)} tinha menos pontos na mão. +${pts} pontos.`;
   else txt=`${nm(E.winner)} bateu! ${KIND[how]}${bonus?` (+${bonus})`:""}. +${pts} pontos${team?" para a dupla":""}.`;
   if(bl.length) txt+=` Coringas: ${bl.join(", ")}.`;
+  const rw=(E.rw||[]).map(num), multi=NET.rounds>1;
   if(E.over){
     const w=P.map((_,i)=>i).filter(i=>E.champ[i]);
     title=E.champ[0]?(team?"Sua dupla venceu a partida! 🏆":"Você venceu a partida! 🏆"):(team?"A dupla adversária venceu a partida":`${w.map(nm).join(" e ")} venceu a partida`);
+  } else if(E.roundOver){
+    const w=P.map((_,i)=>i).filter(i=>E.champ[i]);
+    title=`Rodada ${num(E.round)}: `+(E.champ[0]?(team?"sua dupla venceu!":"você venceu!"):(team?"a dupla adversária venceu":`${w.map(nm).join(" e ")} venceu`));
   } else title=E.winner===null?"Mão empatada":E.won[0]?(E.winner===0?"Você venceu a mão!":"Sua dupla venceu a mão!"):(team?"A dupla adversária venceu a mão":`${nm(E.winner)} venceu a mão`);
   const T=NET.target, g=num((E.gain||[])[0]);
-  const rows=P.map((p,i)=>`<div class="he-row${E.won[i]?" win":""}"><span>${p.name}${team?` <small>· ${(i%2)?"adversário":"sua dupla"}</small>`:""}</span><i>${handPips(p.hand)} na mão</i><b>${p.score} / ${T}</b></div>`).join("");
-  const shopNext=NET.shop&&!E.over;
-  const btn=host?`<button class="btn" id="henext">${E.over?"Jogar de novo ▶":shopNext?"Ir para a loja ▶":"Próxima mão ▶"}</button>`:`<button class="btn" id="henext" disabled>Esperando o anfitrião…</button>`;
+  const rows=P.map((p,i)=>`<div class="he-row${E.won[i]?" win":""}"><span>${p.name}${team?` <small>· ${(i%2)?"adversário":"sua dupla"}</small>`:""}</span><i>${handPips(p.hand)} na mão</i><b>${multi?`<small class="he-rw">${"🏆".repeat(Math.min(5,rw[i]||0))}</small> `:""}${p.score} / ${T}</b></div>`).join("");
+  const shopNext=NET.shop&&multi&&E.roundOver&&!E.over;
+  const btn=host?`<button class="btn" id="henext">${E.over?"Jogar de novo ▶":shopNext?"Ir para a loja ▶":E.roundOver?"Próxima rodada ▶":"Próxima mão ▶"}</button>`:`<button class="btn" id="henext" disabled>Esperando o anfitrião…</button>`;
   box.classList.remove("hidden");
-  box.innerHTML=`<h3>${title}</h3><p>${txt}</p>${NET.shop&&g&&!E.over?`<p class="he-gain">+$${g} para gastar na loja</p>`:""}<div class="he-rows">${rows}</div><div class="he-btns">${btn}${E.over?`<button class="btn alt" id="heleave">Sair da sala</button>`:""}</div>`;
+  box.innerHTML=`<h3>${title}</h3><p>${txt}</p>${g&&!E.over?`<p class="he-gain">+$${g} para a loja${shopNext?"":" no fim da rodada"}</p>`:""}<div class="he-rows">${rows}</div><div class="he-btns">${btn}${E.over?`<button class="btn alt" id="heleave">Sair da sala</button>`:""}</div>`;
   if(host) $("henext").onclick=()=>{ box.classList.add("hidden"); peekUntil=0;
-    if(E.over){ NET.rematch=true; netMatch(); } else if(NET.shop) netShopOpen(false); else { NET.end=null; newHand(false); } };
+    if(E.over){ NET.rematch=true; netMatch(); } else if(E.roundOver) netNextRound(); else { NET.end=null; newHand(false); } };
   const lv=$("heleave"); if(lv) lv.onclick=()=>{ netLeave(); openOnline(); };
   if(E.champ[0]||E.won[0]) sfx.win(); else sfx.bad();
 }
@@ -2967,8 +2988,8 @@ function clientData(m){
   if(m.t==="no"){ const w=cleanTxt(m.why)||"Não deu para entrar."; netLeave(); openOnline(); onStatus(w,true); sfx.bad(); return; }
   if(m.t==="bye"){ clientLost("O anfitrião encerrou a sala."); return; }
   if(m.t==="lobby"){
-    NET.lobby={code:cleanTxt(m.code),mode:NMODES[m.mode]?m.mode:"1x1",target:num(m.target)||100,shop:!!m.shop,seats:(m.seats||[]).slice(0,4).map(x=>x&&{pid:String(x.pid),name:cleanName(x.name)})};
-    NET.mode=NET.lobby.mode; NET.target=NET.lobby.target; NET.shop=NET.lobby.shop;
+    NET.lobby={code:cleanTxt(m.code),mode:NMODES[m.mode]?m.mode:"1x1",target:num(m.target)||100,shop:!!m.shop,rounds:[1,3,5].includes(num(m.rounds))?num(m.rounds):1,seats:(m.seats||[]).slice(0,4).map(x=>x&&{pid:String(x.pid),name:cleanName(x.name)})};
+    NET.mode=NET.lobby.mode; NET.target=NET.lobby.target; NET.shop=NET.lobby.shop; NET.rounds=NET.lobby.rounds;
     if(!NET.on){ if($("online").classList.contains("hidden")) screen("online"); onStatus(""); renderLobby(); }
     return;
   }
@@ -2977,12 +2998,12 @@ function clientData(m){
 function clientApply(s){
   const first=!NET.on, shopPhase=s.phase==="shop";
   if(first){ NET.on=true; document.body.classList.add("netgame"); show(true); }
-  if(s.info){ NET.mode=NMODES[s.info.mode]?s.info.mode:NET.mode; NET.target=num(s.info.target)||NET.target; NET.code=cleanTxt(s.info.code)||NET.code; NET.shop=!!s.info.shop; }
+  if(s.info){ NET.mode=NMODES[s.info.mode]?s.info.mode:NET.mode; NET.target=num(s.info.target)||NET.target; NET.code=cleanTxt(s.info.code)||NET.code; NET.shop=!!s.info.shop; NET.rounds=[1,3,5].includes(num(s.info.rounds))?num(s.info.rounds):1; NET.round=num(s.info.round)||1; }
   const prevHn=first?-1:handNo, prevKeys=new Set(chain.map(r=>r.t+"|"+r.cells)), prevHand=hand.map(t=>t+""), selT=sel!==null&&hand[sel]?hand[sel]+"":null;
   const T2=a=>Array.isArray(a)?[num(a[0]),num(a[1])]:[0,0];
   P=(s.P||[]).slice(0,4).map((x,k)=>{ const p={name:k===0?"Você":cleanName(x.name)||"?",bot:!!x.bot,remote:!x.bot,
     hand:x.hand?x.hand.slice(0,30).map(T2):Array.from({length:Math.min(30,num(x.n))},()=>[0,0]),
-    score:num(x.score),skill:2,skip:num(x.skip),passed:0,lacks:new Set((x.lacks||[]).map(num)),reveal:null};
+    score:num(x.score),rw:num(x.rw),skill:2,skip:num(x.skip),passed:0,lacks:new Set((x.lacks||[]).map(num)),reveal:null};
     if(!x.hand&&x.rev&&p.hand.length){ p.hand[0]=T2(x.rev); p.reveal=p.hand[0]; }
     return p; });
   if(!P.length) return;
@@ -3025,7 +3046,7 @@ function clientApply(s){
   if(note) msg(note);
   else if(!done&&turn===0&&!busy){ const key=handNo+":"+chain.length+":"+hand.length; if(key!==NET.lastKey){ NET.lastKey=key; if(handNo===prevHn) humanTurnStart(); else setTimeout(()=>{ if(NET.on&&turn===0&&!done) humanTurnStart(); },1200); } }
   showNetEnd(done&&s.end?{how:String(s.end.how),bonus:num(s.end.bonus),pts:num(s.end.pts),winner:s.end.winner===null||s.end.winner===undefined?null:num(s.end.winner),
-    won:(s.end.won||[]).map(Boolean),champ:(s.end.champ||[]).map(Boolean),over:!!s.end.over,bl:(s.end.bl||[]).map(String),gain:(s.end.gain||[]).map(num)}:null);
+    won:(s.end.won||[]).map(Boolean),champ:(s.end.champ||[]).map(Boolean),over:!!s.end.over,roundOver:!!s.end.roundOver,round:num(s.end.round),rw:(s.end.rw||[]).map(num),bl:(s.end.bl||[]).map(String),gain:(s.end.gain||[]).map(num)}:null);
 }
 function clientLost(why){
   if(NET.role!=="client"||NET.leaving) return;
@@ -3056,7 +3077,9 @@ render=function(f){
   document.body.classList.toggle("netshop",!!NET.shop);
   const tk=document.querySelector(".ticket"); if(tk){ tk.classList.remove("boss"); const lb=tk.querySelector(".tk-lbl"); if(lb) lb.textContent="PARTIDA ONLINE"; }
   $("bname").textContent=`${M.n} · sala ${NET.code}`;
-  $("bdesc").textContent=team?`A dupla que chegar a ${NET.target} pontos vence`:`Quem chegar a ${NET.target} pontos vence`;
+  if(NET.rounds>1){ const me=P[0]?P[0].rw||0:0, them=Math.max(0,...P.filter((_,i)=>sideOf(i)!==sideOf(0)).map(p=>p.rw||0));
+    $("bdesc").textContent=`Rodada ${NET.round} de ${NET.rounds} · ${team?"sua dupla":"você"} ${me} × ${them} · primeiro a ${NET.target} pts`; }
+  else $("bdesc").textContent=team?`A dupla que chegar a ${NET.target} pontos vence`:`Quem chegar a ${NET.target} pontos vence`;
   const sh=document.querySelector(".sb-head span"); if(sh) sh.textContent=team?"sua dupla":"seus pontos";
   hostPush();
 };
