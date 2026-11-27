@@ -3782,7 +3782,7 @@ function clientApply(s){
   if(!P.length) return;
   hand=P[0].hand; sortHand(); gameMode=P.length-1;
   handNo=num(s.hn); turn=num(s.turn); done=!!s.done; busy=!!s.busy; TW=num(s.TW)||12;
-  const A=s.arms||{}, arm=a=>({x:num(a&&a.x),y:num(a&&a.y),dir:num(a&&a.dir)||1,vd:num(a&&a.vd)||1,end:a&&a.end!==null&&a.end!==undefined?num(a.end):null});
+  const A=s.arms||{}, arm=a=>({hx:num(a&&a.hx),hy:num(a&&a.hy),dx:num(a&&a.dx),dy:num(a&&a.dy),vd:num(a&&a.vd)||1,px:a&&a.px!==undefined?num(a.px):undefined,end:a&&a.end!==null&&a.end!==undefined?num(a.end):null});
   arms={L:arm(A.L),R:arm(A.R)};
   let fresh=0;
   chain=(s.chain||[]).slice(0,30).map(r=>{ const rec={cells:(r.cells||[]).slice(0,2).map(T2),vals:T2(r.vals),o:r.o==="v"?"v":"h",t:T2(r.t),wild:!!r.wild};
