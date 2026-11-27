@@ -999,6 +999,45 @@ body.widegame .opps.m3 .pos-r .seat-hand{transform:perspective(520px) rotateY(-2
 .pk-dots i.on{background:var(--gold)}
 .setnote{font-size:12px;color:#c9d5ee;text-align:center;margin:14px 0 12px}
 #setupgo{width:100%;font-size:22px;padding:14px}
+#online{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px 14px;box-sizing:border-box}
+.oninp{width:100%;box-sizing:border-box;background:rgba(8,12,30,.55);border:3px solid rgba(255,255,255,.16);border-radius:12px;color:#fff;font:600 19px var(--font);padding:10px 12px;outline:none}
+.oninp:focus{border-color:var(--gold)}
+.oninp::placeholder{color:rgba(201,213,238,.55)}
+.oninp.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:24px;font-weight:700}
+.onrow{margin:12px 0;font-size:16px}
+#on-mode button{min-width:0;padding:10px 4px}
+#on-mode .pk-art{gap:3px}
+#on-mode .pk-art i{width:12px;height:24px}
+#on-mode button small{font-size:11px}
+#on-create,#lb-start{width:100%;font-size:20px;padding:12px}
+#lb-start:disabled{opacity:.5}
+.ondiv{display:flex;align-items:center;gap:10px;margin:14px 0 2px;color:#c9d5ee;font-size:13px;text-transform:uppercase;letter-spacing:2px}
+.ondiv::before,.ondiv::after{content:"";flex:1;height:2px;background:rgba(255,255,255,.14)}
+.onjoin{display:flex;gap:8px}
+.onjoin .oninp{flex:1;min-width:0}
+.onjoin .btn{flex:none;width:auto;padding:10px 18px;font-size:18px;background:var(--green)}
+.onstatus{min-height:20px;margin:12px 0 0;text-align:center;font-size:15px;color:#c9d5ee}
+.onstatus:empty{display:none}
+.onstatus.bad{color:var(--red)}
+.oncode{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(8,12,30,.5);border:3px dashed rgba(245,178,68,.6);border-radius:14px;padding:12px}
+.oncode span{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#c9d5ee}
+.oncode b{font-size:44px;letter-spacing:10px;color:var(--gold);padding-left:10px;user-select:all}
+.oncodebtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.lbseats{display:flex;flex-direction:column;gap:8px}
+.lbteam{display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:12px;background:rgba(8,12,30,.3)}
+.lbteam>small{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+.lbseat{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(8,12,30,.45);border:3px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;font:600 17px var(--font);padding:8px 10px;cursor:default}
+.lbseat .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--c,#555);font-weight:700;flex:none}
+.lbseat em{margin-left:auto;font-style:normal;font-size:12px;color:#c9d5ee}
+.lbseat.me{border-color:var(--gold)}
+.lbseat.empty{color:#c9d5ee;border-style:dashed;cursor:pointer}
+.lbseat.empty:hover{border-color:rgba(245,178,68,.6)}
+.lbseat.empty .av{background:rgba(255,255,255,.1)}
+body.netgame .money2,body.netgame .roundtrack,body.netgame #infobtn,body.netgame #runinfo,body.netgame .rail{display:none!important}
+body.netgame .hudbtns{grid-template-columns:1fr}
+.opp-seat.ally .nm b{color:var(--green)}
+.he-btns{display:flex;flex-direction:column;gap:8px}
+.he-btns .btn:disabled{opacity:.6}
 body.widegame .opps.m3 .pos-l .nm small,body.widegame .opps.m3 .pos-r .nm small{white-space:normal}
 @media (max-width:759px){ .side .row .girar{width:48px;height:auto;min-height:44px;border-radius:12px;margin:0} }
 @media (max-width:759px){
@@ -1049,6 +1088,7 @@ body.widegame .opps.m3 .pos-l .nm small,body.widegame .opps.m3 .pos-r .nm small{
 @keyframes pplay{50%{transform:scale(1.04)}}
 #home.h2 .hbar #howbtn{background:var(--green)}
 #home.h2 .hbar #setbtn{background:var(--orange)}
+#home.h2 .hbar #onbtn{background:var(--purple)}
 #home.h2 .floaters,#home.h2 .demo,#home.h2>p,#home.h2 .ver,#home.h2>.hstats{display:none!important}
 body.no-anim #home.h2 *{animation:none!important}
 @media (max-width:640px){
@@ -1057,6 +1097,7 @@ body.no-anim #home.h2 *{animation:none!important}
   #home.h2 .lg{filter:drop-shadow(3px 0 0 #0e1619) drop-shadow(-3px 0 0 #0e1619) drop-shadow(0 3px 0 #0e1619) drop-shadow(0 -3px 0 #0e1619) drop-shadow(0 7px 0 #8e2418) drop-shadow(0 10px 8px rgba(0,0,0,.5))}
   #home.h2 .hbar{display:grid;grid-template-columns:1fr 1fr;width:calc(100% - 32px);max-width:420px;box-sizing:border-box;margin-bottom:84px}
   #home.h2 .hbar #start{grid-column:1/-1;order:-1;min-width:0}
+  #home.h2 .hbar #onbtn{grid-column:1/-1;order:-1}
   #home.h2 .hbar .btn{min-width:0;font-size:16px;padding:12px 6px}
   #home.h2 .hlogo small{font-size:11px;letter-spacing:3px;margin-top:40px}
   #home.h2 .bigtile{width:22vw}
@@ -1102,7 +1143,7 @@ body.no-anim #home.h2 *{animation:none!important}
   <section id="home" class="h2">
     <div class="vortex" aria-hidden="true"><canvas id="swirl" width="160" height="90"></canvas></div>
     <div class="floaters" id="floaters" aria-hidden="true"></div>
-    <div class="hv">v0.5</div>
+    <div class="hv">v0.6</div>
     <div class="hlogo">
       <small id="gsub"></small>
       <div class="lstage">
@@ -1114,6 +1155,7 @@ body.no-anim #home.h2 *{animation:none!important}
     <div class="hbar">
       <button class="btn" id="howbtn">Como jogar</button>
       <button class="btn" id="start">▶ Jogar</button>
+      <button class="btn" id="onbtn">👥 Online</button>
       <button class="btn" id="setbtn">Configurações</button>
     </div>
     <div class="htip" id="htip"></div>
@@ -1137,6 +1179,34 @@ body.no-anim #home.h2 *{animation:none!important}
       <button class="btn" id="setupgo">▶ Começar</button>
     </div>
   </section>
+  <section id="online" class="hidden">
+    <div class="setcard oncard">
+      <div class="sethead"><button class="mini" id="onback">← Voltar</button><h2 id="ontitle">Jogar online</h2></div>
+      <div id="on-menu">
+        <div class="setlbl">Seu nome</div>
+        <input id="on-name" class="oninp" maxlength="12" placeholder="Como seus amigos te chamam" autocomplete="nickname">
+        <div class="setlbl">Criar sala</div>
+        <div class="pick three" id="on-mode">
+          <button data-v="1x1"><span class="pk-art"><i></i><b>VS</b><i class="bk"></i></span><b>1×1</b><small>Você contra um amigo</small></button>
+          <button data-v="2x2"><span class="pk-art"><i></i><i></i><b>VS</b><i class="bk"></i><i class="bk"></i></span><b>2×2</b><small>Duplas, parceiro na frente</small></button>
+          <button data-v="ffa"><span class="pk-art"><i></i><i class="bk"></i><i class="bk"></i><i class="bk"></i></span><b>Todos</b><small>4 na mesa, cada um por si</small></button>
+        </div>
+        <div class="srow onrow"><span>Meta de pontos</span><div class="seg" id="on-target"><button data-v="50">50</button><button data-v="100">100</button><button data-v="200">200</button></div></div>
+        <button class="btn" id="on-create">Criar sala</button>
+        <div class="ondiv"><span>ou</span></div>
+        <div class="setlbl">Entrar numa sala</div>
+        <div class="onjoin"><input id="on-code" class="oninp code" maxlength="5" placeholder="CÓDIGO" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="btn" id="on-join">Entrar</button></div>
+      </div>
+      <div id="on-lobby" class="hidden">
+        <div class="oncode"><span>Código da sala</span><b id="lb-code">-----</b><div class="oncodebtns"><button class="skinbtn" id="lb-copy">Copiar código</button><button class="skinbtn" id="lb-share">Enviar link</button></div></div>
+        <div class="setlbl" id="lb-modelbl">Mesa</div>
+        <div id="lb-seats" class="lbseats"></div>
+        <p class="setnote" id="lb-note"></p>
+        <button class="btn" id="lb-start">▶ Começar partida</button>
+      </div>
+      <p class="onstatus" id="on-status"></p>
+    </div>
+  </section>
   <section id="howto" class="hidden">
     <div class="shead"><button class="mini" id="howback">← Voltar</button><h2>Como jogar</h2></div>
     <div class="sgroup"><h3>Objetivo</h3><p>Chegue à meta de pontos de cada nível antes dos bots. São 8 níveis, e os níveis 3, 6 e 8 são chefes.</p></div>
@@ -1153,6 +1223,12 @@ body.no-anim #home.h2 *{animation:none!important}
       <li><b>Passivos</b> ficam sempre ligados: revelam pedras, contam o que saiu, dão pontos extras.</li>
       <li><b>Ativos</b> têm 1 uso por mão: toque no coringa na barra e em <b>Usar</b>. Eles brilham quando estão prontos.</li>
       <li>Vencer um nível rende moedas para comprar coringas na loja (até 5).</li></ul></div>
+    <div class="sgroup"><h3>Online</h3><ul>
+      <li>Em <b>Online</b>, um jogador cria a sala e recebe um <b>código</b> de 5 letras. Ele é o anfitrião: a partida roda no aparelho dele.</li>
+      <li>Os amigos tocam em <b>Entrar numa sala</b> e digitam o código, ou abrem o link que o anfitrião enviou.</li>
+      <li><b>1×1</b>: dois jogadores, 14 pedras no banco. <b>2×2</b>: duplas com o parceiro na sua frente, e a dupla soma os pontos das mãos adversárias. <b>Todos</b>: quatro na mesa, cada um por si.</li>
+      <li>No 2×2 e no Todos, vagas livres viram bots. Se alguém cair, um bot assume o lugar até a pessoa voltar com o mesmo nome.</li>
+      <li>Online não tem coringas nem loja: vence quem chegar primeiro à meta de pontos.</li></ul></div>
   </section>
   <section id="settings" class="hidden">
     <div class="shead"><button class="mini" id="setback">← Voltar</button><h2>Configurações</h2></div>
@@ -1183,7 +1259,7 @@ body.no-anim #home.h2 *{animation:none!important}
       <div class="statgrid" id="statgrid"></div>
       <button class="btn danger" id="reset">Apagar progresso e recordes</button>
     </div>
-    <div class="sgroup"><h3>Sobre</h3><p>Protótipo com título provisório. Dominó contra bots com coringas, loja e desafios.</p><p>Versão 0.5</p><span id="sstats" hidden></span></div>
+    <div class="sgroup"><h3>Sobre</h3><p>Protótipo com título provisório. Dominó contra bots com coringas, loja e desafios.</p><p>Versão 0.6</p><span id="sstats" hidden></span></div>
   </section>
   <div id="game" class="hidden">
   <button class="mini" id="menu">← Menu</button>
@@ -1647,6 +1723,7 @@ function buildChallenges(){
 }
 
 // ---------- estado ----------
+let NET={on:false,role:null};                        // multiplayer online (ver módulo no fim)
 let mode=null, round=1, jokers=[], coins=0, offer=[], rerolls=0, bought=0, firstShop=false, shopSel=null, jSel=null, dealShop=false, summary=null;
 let chs=[], gameMode=1, diff=1;                       // gameMode: 1 = 1x1, 3 = 1x3
 let P=[];                                             // jogadores: [{name,bot,hand,score,skill,passed:Set,lacks:Set,skip,reveal}]
@@ -1659,7 +1736,7 @@ let tick=0;
 const SPD=()=>({l:1.7,n:1,r:.45})[cfg.speed]||1;
 function sched(fn,ms){ const k=++tick; setTimeout(()=>{ if(k===tick) fn(); },ms); }
 function cancelTurns(){ tick++; }
-const target=(r=round)=>{ const ch=chs[r-1]||{}; const base=gameMode===1?50+10*(r-1):100+20*(r-1); return Math.round(base*(ch.tmul||1)/5)*5; };
+const target=(r=round)=>{ if(NET.on) return NET.target; const ch=chs[r-1]||{}; const base=gameMode===1?50+10*(r-1):100+20*(r-1); return Math.round(base*(ch.tmul||1)/5)*5; };
 const pips=t=>t[0]<0?0:t[0]+t[1];
 const isDbl=t=>t[0]>=0&&t[0]===t[1];
 const handPips=h=>h.reduce((a,t)=>a+pips(t),0);
@@ -1768,7 +1845,7 @@ function nextTurn(stay){
   if(lockEnd){ lockEnd.turns--; if(lockEnd.turns<=0) lockEnd=null; }
   render();
   if(p.bot){ const pi=turn; busy=true; sched(()=>botTurn(pi), cfg.anim?(650+Math.random()*350)*SPD():20); }
-  else humanTurnStart();
+  else if(!p.remote) humanTurnStart();
 }
 function humanTurnStart(){
   const mv=movesFor(0);
@@ -1794,6 +1871,7 @@ function humanBuy(){
   if(done||busy||turn!==0||mode!=="play") return;
   if(movesFor(0).length){ msg("Você tem jogada: não precisa comprar.","bad"); sfx.bad(); return; }
   if(!canBuy(0)) return;
+  if(NET.on&&NET.role==="client"){ netSend({t:"act",a:"buy"}); busy=true; render(); return; }
   const t=drawFor(0); sortHand(); sfx.uns(); render();
   const idx=hand.indexOf(t); setTimeout(()=>chestOut([idx],0),0);
   humanTurnStart();
@@ -1802,6 +1880,7 @@ function humanPass(){
   if(done||busy||turn!==0||mode!=="play") return;
   if(movesFor(0).length){ msg("Você tem jogada: não pode passar.","bad"); sfx.bad(); return; }
   if(canBuy(0)){ msg("Ainda há pedras no banco: compre primeiro.","bad"); sfx.bad(); return; }
+  if(NET.on&&NET.role==="client"){ netSend({t:"act",a:"pass"}); busy=true; render(); return; }
   doPass(0);
 }
 function doPass(pi){
@@ -1819,7 +1898,7 @@ function unseen(n,pi){ // quantas pedras com n ainda não foram vistas por este 
 }
 function botChoose(pi){
   const mv=movesFor(pi); if(!mv.length) return null;
-  const sk=P[pi].skill, h=P[pi].hand;
+  const sk=P[pi].skill, h=P[pi].hand, foe=NET.on?P[(pi+1)%P.length]:P[0];
   if(sk===0) return mv[Math.floor(Math.random()*mv.length)];
   let best=null,bs=-1e9;
   for(const m of mv){
@@ -1829,12 +1908,12 @@ function botChoose(pi){
     if(sk>=2&&open!==null){
       const rest=h.filter((_,k)=>k!==m.i), mine=rest.filter(x=>x[0]===open||x[1]===open).length;
       sc+=mine*2;
-      if(P[0].lacks.has(open)) sc+=6;                       // fecha o número que você não tem
-      const other=m.side==="L"?arms.R.end:arms.L.end; if(P[0].lacks.has(other)) sc+=2;
+      if(foe.lacks.has(open)) sc+=6;                        // fecha o número que o adversário não tem
+      const other=m.side==="L"?arms.R.end:arms.L.end; if(foe.lacks.has(other)) sc+=2;
     }
     if(sk>=3&&open!==null){
       if(unseen(open,pi)<=1) sc+=5;                          // número quase esgotado: tende a trancar
-      if(P[0].hand.length<=2&&P[0].lacks.has(open)) sc+=10;
+      if(foe.hand.length<=2&&foe.lacks.has(open)) sc+=10;
     }
     sc+=Math.random()*(sk>=3?0.5:1.5);
     if(sc>bs){bs=sc;best=m;}
@@ -1879,12 +1958,14 @@ function humanPlay(i,side){
     else { rejectSide(side); return false; }
   }
   if(!chain.length) side="R";
+  if(NET.on&&NET.role==="client"){ netSend({t:"act",a:"play",tile:t,side}); sel=null; busy=true; render(); return true; }
   hand.splice(i,1); sel=null;
   playTile(0,t,side,opts); return true;
 }
 
 // ---------- fim da mão ----------
 function endHand(winner,how,lastT,lastSide){
+  if(NET.on) return netEndHand(winner,how,lastT);
   done=true; busy=true; cancelTurns();
   let txt="", pts=0, bonus=[], label="";
   if(how==="lock"||how==="short"){
@@ -2047,10 +2128,11 @@ function renderSeats(){
   wrap.className="opps m"+gameMode;
   const pos=gameMode===1?["t"]:["l","t","r"];
   P.forEach((p,i)=>{ if(i===0) return;
-    const d=document.createElement("div"); d.className=`seat opp-seat pos-${pos[i-1]}${turn===i&&!done?" turn":""}`;
+    const ally=NET.on&&NET.mode==="2x2"&&i===2;
+    const d=document.createElement("div"); d.className=`seat opp-seat pos-${pos[i-1]}${turn===i&&!done?" turn":""}${ally?" ally":""}`;
     const tk=talk[i]&&talk[i].until>Date.now()?`<span class="bubble">${talk[i].t}</span>`:"";
     const lacks=has("gemeos")&&p.lacks.size?`<span class="lacks">sem: ${[...p.lacks].sort().join(" ")}</span>`:"";
-    d.innerHTML=`<div class="seat-id"><span class="av" style="--c:${AV_COL[(i-1)%3]}">${p.name[0]}</span><span class="nm"><b>${p.name}</b><small>${SKILL_N[p.skill]} · ${p.score} pts</small>${lacks}</span><span class="cnt">${p.hand.length}</span></div><div class="seat-hand">${backsHTML(p,i)}</div>${tk}${p.skip?`<span class="skipb">⏭ ${p.skip}</span>`:""}`;
+    d.innerHTML=`<div class="seat-id"><span class="av" style="--c:${AV_COL[(i-1)%3]}">${p.name[0]}</span><span class="nm"><b>${p.name}</b><small>${NET.on?(ally?"parceiro":p.bot?"bot":"online"):SKILL_N[p.skill]} · ${p.score} pts</small>${lacks}</span><span class="cnt">${p.hand.length}</span></div><div class="seat-hand">${backsHTML(p,i)}</div>${tk}${p.skip?`<span class="skipb">⏭ ${p.skip}</span>`:""}`;
     wrap.appendChild(d);
   });
 }
@@ -2291,12 +2373,12 @@ window.addEventListener("resize",()=>{ placeRail(); if(jSel!==null) showPop(jSel
 // ---------- telas ----------
 function screen(n){
   document.body.classList.toggle("ingame",n==="game");
-  for(const id of ["home","howto","settings","game","setup"]) $(id).classList.toggle("hidden",id!==n);
+  for(const id of ["home","howto","settings","game","setup","online"]) $(id).classList.toggle("hidden",id!==n);
   jSel=null; hidePop(); requestAnimationFrame(placeRail);
   if(n==="home"||n==="settings") renderHome();
   window.scrollTo(0,0);
 }
-function show(g){ if(!g) cancelTurns(); screen(g?"game":"home"); }
+function show(g){ if(!g) cancelTurns(); if(!g&&NET.role) netLeave(); screen(g?"game":"home"); }
 $("start").onclick=()=>openSetup();
 let exitArm=0;
 function askExit(){
@@ -2455,6 +2537,374 @@ function buildHome2(){
   home.addEventListener("pointerleave",()=>{ st.style.setProperty("--px",0); st.style.setProperty("--py",0); });
 })();
 
+// =====================================================================
+// ONLINE — salas com código. Quem cria a sala é o anfitrião: a partida
+// roda no aparelho dele e os outros recebem o estado pela rede (WebRTC
+// via PeerJS). O anfitrião é sempre o índice 0 do motor; cada cliente
+// vê a mesa girada para que ele seja o índice 0 na tela dele.
+// =====================================================================
+const NMODES={"1x1":{N:2,n:"1×1",bots:false},"2x2":{N:4,n:"2×2",bots:true},"ffa":{N:4,n:"Todos contra todos",bots:true}};
+const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789", PEER_PRE="dmn-sala-", PEERJS_URL="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js";
+Object.assign(NET,{on:false,role:null,code:"",mode:"1x1",target:100,seats:[],peer:null,conns:new Map(),me:null,hostConn:null,pidE:{},end:null,lobby:null,hb:0,qT:0,leaving:false,lastKey:""});
+const cleanName=s=>String(s||"").replace(/[<>&"'`\\]/g,"").replace(/\s+/g," ").trim().slice(0,12);
+const cleanTxt=s=>String(s||"").replace(/[<>&"'`\\]/g,"").slice(0,40);
+const num=v=>{ v=+v; return Number.isFinite(v)?Math.round(v):0; };
+const myName=()=>cleanName(cfg.netName)||"Jogador";
+function onStatus(t,bad){ const e=$("on-status"); e.textContent=t||""; e.className="onstatus"+(bad?" bad":""); }
+let peerLib=null;
+function loadPeer(){
+  if(window.Peer) return Promise.resolve();
+  if(peerLib) return peerLib;
+  peerLib=new Promise((ok,no)=>{ const s=document.createElement("script"); s.src=PEERJS_URL; s.onload=()=>ok(); s.onerror=()=>{ peerLib=null; s.remove(); no(new Error("lib")); }; document.head.appendChild(s); });
+  return peerLib;
+}
+function peerOpts(){
+  // ?peerhost=localhost:9000 aponta para um servidor PeerJS próprio (testes locais)
+  let q=null; try{ q=new URLSearchParams(location.search).get("peerhost"); }catch(e){}
+  if(!q) return {debug:0};
+  const [h,p]=q.split(":"); return {host:h,port:+p||9000,path:"/",secure:location.protocol==="https:",debug:0,config:{iceServers:[]}};
+}
+const newCode=()=>Array.from({length:5},()=>CODE_ABC[Math.floor(Math.random()*CODE_ABC.length)]).join("");
+const errText=e=>{ const t=e&&e.type;
+  if(t==="peer-unavailable") return "Sala não encontrada. Confira o código.";
+  if(t==="browser-incompatible") return "Este navegador não suporta jogo online.";
+  if(t==="network"||t==="server-error"||t==="socket-error"||t==="socket-closed") return "Não consegui falar com o servidor. Confira a internet e tente de novo.";
+  return "Erro de conexão"+(t?` (${t})`:"")+". Tente de novo."; };
+function watch(conn,onDead){ conn._last=Date.now(); conn._dead=onDead; }
+function heartbeat(){
+  clearInterval(NET.hb);
+  NET.hb=setInterval(()=>{
+    const all=NET.role==="host"?[...NET.conns.values()]:NET.hostConn?[NET.hostConn]:[];
+    all.forEach(c=>{ try{ c.send({t:"ping"}); }catch(e){} if(Date.now()-c._last>30000&&c._dead){ const f=c._dead; c._dead=null; f(); } });
+  },2500);
+}
+function netSend(m){ try{ if(NET.hostConn&&NET.hostConn.open) NET.hostConn.send(m); }catch(e){} }
+
+// ---------- telas ----------
+function openOnline(code){
+  if(NET.role){ screen("online"); renderLobby(); return; }
+  screen("online");
+  $("on-menu").classList.remove("hidden"); $("on-lobby").classList.add("hidden"); $("ontitle").textContent="Jogar online";
+  $("on-name").value=cfg.netName||"";
+  if(code) $("on-code").value=code;
+  onPick(); onStatus("");
+  if(code&&!cfg.netName) setTimeout(()=>$("on-name").focus(),50);
+}
+function onPick(){
+  const m=cfg.netMode||"1x1", t=cfg.netTarget||100;
+  document.querySelectorAll("#on-mode button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
+  document.querySelectorAll("#on-target button").forEach(b=>b.classList.toggle("on",+b.dataset.v===t));
+}
+document.querySelectorAll("#on-mode button").forEach(b=>b.onclick=()=>{ cfg.netMode=b.dataset.v; save(); onPick(); sfx.sel(); });
+document.querySelectorAll("#on-target button").forEach(b=>b.onclick=()=>{ cfg.netTarget=+b.dataset.v; save(); onPick(); sfx.sel(); });
+$("on-name").oninput=()=>{ cfg.netName=cleanName($("on-name").value); save(); };
+$("on-code").oninput=()=>{ const e=$("on-code"); e.value=e.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5); };
+$("on-code").onkeydown=e=>{ if(e.key==="Enter") $("on-join").click(); };
+$("onbtn").onclick=()=>openOnline();
+$("onback").onclick=()=>{ if(NET.role){ netLeave(); openOnline(); } else screen("home"); };
+$("on-create").onclick=()=>hostCreate();
+$("on-join").onclick=()=>{ const c=$("on-code").value.trim().toUpperCase(); if(c.length!==5){ onStatus("O código tem 5 letras.",true); sfx.bad(); return; } joinRoom(c); };
+const roomLink=()=>location.origin+location.pathname+"?sala="+NET.code;
+function copyTxt(t){ try{ if(navigator.clipboard) return navigator.clipboard.writeText(t); }catch(e){}
+  const a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); try{document.execCommand("copy");}catch(e){} a.remove(); return Promise.resolve(); }
+$("lb-copy").onclick=()=>{ Promise.resolve(copyTxt(NET.code)).then(()=>{ $("lb-copy").textContent="Copiado ✓"; setTimeout(()=>$("lb-copy").textContent="Copiar código",1600); }); sfx.sel(); };
+$("lb-share").onclick=()=>{ const url=roomLink(), text=`Bora jogar dominó! Sala ${NET.code}`;
+  if(navigator.share) navigator.share({title:"Dominó",text,url}).catch(()=>{});
+  else Promise.resolve(copyTxt(text+": "+url)).then(()=>{ $("lb-share").textContent="Link copiado ✓"; setTimeout(()=>$("lb-share").textContent="Enviar link",1600); }); };
+$("lb-start").onclick=()=>hostStart();
+
+// ---------- sala (lobby) ----------
+const lobbyMsg=()=>({t:"lobby",code:NET.code,mode:NET.mode,target:NET.target,seats:NET.seats.map(x=>x&&{pid:x.pid,name:x.name})});
+function hostLobbyPush(){ NET.lobby=lobbyMsg(); for(const c of NET.conns.values()) try{ c.send(NET.lobby); }catch(e){} renderLobby(); }
+function renderLobby(){
+  const L=NET.lobby; if(!L) return;
+  $("on-menu").classList.add("hidden"); $("on-lobby").classList.remove("hidden");
+  $("ontitle").textContent="Sala "+L.code; $("lb-code").textContent=L.code;
+  const M=NMODES[L.mode]||NMODES["1x1"], host=NET.role==="host";
+  $("lb-modelbl").textContent=`Mesa ${M.n} · meta ${L.target} pts`;
+  const seatEl=(x,s)=>{ const me=x&&x.pid===NET.me, isH=x&&x.pid==="H";
+    return `<button class="lbseat${x?"":" empty"}${me?" me":""}" data-s="${s}"><span class="av" style="--c:${AV_COL[s%3]}">${x?cleanName(x.name)[0]||"?":"+"}</span><span>${x?cleanName(x.name):M.bots?"Vaga livre (bot)":"Vaga livre"}</span><em>${x?(isH?"👑 anfitrião":"")+(me?" · você":""):"tocar para sentar"}</em></button>`; };
+  const S=L.seats;
+  $("lb-seats").innerHTML=L.mode==="2x2"
+    ?[[0,2],[1,3]].map((g,k)=>`<div class="lbteam"><small>Dupla ${k?"B":"A"}</small>${g.map(s=>seatEl(S[s],s)).join("")}</div>`).join("")
+    :S.map((x,s)=>seatEl(x,s)).join("");
+  $("lb-seats").querySelectorAll(".lbseat.empty").forEach(b=>b.onclick=()=>{ const s=+b.dataset.s; sfx.sel(); if(host) hostSeat("H",s); else netSend({t:"seat",seat:s}); });
+  const humans=S.filter(Boolean).length, can=humans>=2&&(M.bots||humans===M.N);
+  $("lb-start").classList.toggle("hidden",!host); $("lb-start").disabled=!can;
+  $("lb-note").textContent=host
+    ?(humans<2?"Mande o código para os amigos. Eles tocam em Entrar numa sala e digitam o código.":!can?"Falta um jogador para fechar a mesa.":M.bots&&humans<M.N?"Pronto! As vagas livres viram bots.":"Mesa cheia. Pode começar!")
+    :"Esperando o anfitrião começar a partida…";
+}
+function hostSeat(pid,s){
+  if(s<0||s>=NET.seats.length||NET.seats[s]) return;
+  const k=NET.seats.findIndex(x=>x&&x.pid===pid); if(k<0) return;
+  NET.seats[s]=NET.seats[k]; NET.seats[k]=null; hostLobbyPush();
+}
+
+// ---------- anfitrião ----------
+function hostCreate(tries){
+  tries=tries||0;
+  cfg.netName=cleanName($("on-name").value); save();
+  if(!cfg.netName){ onStatus("Escreva seu nome primeiro.",true); sfx.bad(); $("on-name").focus(); return; }
+  onStatus("Criando sala…"); $("on-create").disabled=true;
+  loadPeer().then(()=>{
+    const code=newCode(), peer=new Peer(PEER_PRE+code,peerOpts());
+    let opened=false;
+    peer.on("open",()=>{ opened=true; $("on-create").disabled=false;
+      NET.role="host"; NET.peer=peer; NET.code=code; NET.me="H"; NET.mode=cfg.netMode||"1x1"; NET.target=cfg.netTarget||100; NET.leaving=false;
+      NET.seats=Array(NMODES[NET.mode].N).fill(null); NET.seats[0]={pid:"H",name:myName()};
+      onStatus(""); heartbeat(); hostLobbyPush(); sfx.buy(); });
+    peer.on("connection",c=>hostConn(c));
+    peer.on("disconnected",()=>{ if(NET.peer===peer&&!NET.leaving) try{ peer.reconnect(); }catch(e){} });
+    peer.on("error",e=>{
+      if(!opened&&e.type==="unavailable-id"&&tries<4){ try{peer.destroy();}catch(_){} hostCreate(tries+1); return; }
+      if(!opened){ $("on-create").disabled=false; onStatus(errText(e),true); try{peer.destroy();}catch(_){} }
+    });
+  }).catch(()=>{ $("on-create").disabled=false; onStatus("Não consegui carregar o modo online. Confira a internet.",true); });
+}
+function hostConn(c){
+  watch(c,()=>hostDrop(c));
+  c.on("data",m=>{ c._last=Date.now(); if(m&&typeof m==="object") hostData(c,m); });
+  c.on("close",()=>hostDrop(c));
+  c.on("error",()=>{});
+}
+function reject(c,why){ try{ c.send({t:"no",why}); }catch(e){} setTimeout(()=>{ try{c.close();}catch(e){} },400); }
+function hostData(c,m){
+  const pid=c.peer;
+  if(m.t==="ping") return;
+  if(m.t==="hello"){
+    const name=cleanName(m.name)||"Jogador";
+    if(NET.on){ // partida em andamento: só volta quem caiu (mesmo nome)
+      const e=P.findIndex(p=>p.dropped&&cleanName(p.real)===name);
+      if(e<0) return reject(c,"A partida já começou.");
+      const p=P[e]; p.bot=false; p.remote=true; p.dropped=false; p.pid=pid; NET.pidE[pid]=e;
+      NET.conns.set(pid,c); say(e,"voltou"); render(); return;
+    }
+    const s=NET.seats.findIndex(x=>!x); if(s<0) return reject(c,"A sala está cheia.");
+    let nm=name; for(let k=2;NET.seats.some(x=>x&&x.name===nm);k++) nm=name.slice(0,10)+" "+k;
+    NET.seats[s]={pid,name:nm}; NET.conns.set(pid,c); c._ok=true; sfx.sel(); hostLobbyPush(); return;
+  }
+  if(!c._ok&&!(pid in NET.pidE)) return;
+  if(m.t==="seat"&&!NET.on) return hostSeat(pid,num(m.seat));
+  if(m.t==="act"&&NET.on) return hostAct(pid,m);
+}
+function hostDrop(c){
+  const pid=c.peer; if(NET.conns.get(pid)!==c) return;
+  NET.conns.delete(pid); try{c.close();}catch(e){}
+  if(NET.role!=="host") return;
+  if(!NET.on){ const k=NET.seats.findIndex(x=>x&&x.pid===pid); if(k>=0){ NET.seats[k]=null; hostLobbyPush(); } return; }
+  const e=NET.pidE[pid]; if(e===undefined) return; delete NET.pidE[pid];
+  const p=P[e]; p.remote=false; p.bot=true; p.dropped=true; p.skill=2;
+  say(e,"caiu: um bot assumiu"); msg(`${p.real} saiu. Um bot joga no lugar até ele voltar.`,"bad");
+  if(turn===e&&!done&&!busy&&mode==="play"){ busy=true; sched(()=>botTurn(e),700); }
+  render();
+}
+function hostStart(){
+  const M=NMODES[NET.mode], humans=NET.seats.filter(Boolean).length;
+  if(humans<2||(!M.bots&&humans<M.N)) return;
+  NET.on=true; document.body.classList.add("netgame"); show(true); netMatch(); sfx.win();
+}
+function netMatch(){
+  // monta a mesa a partir das cadeiras, girando para que o anfitrião seja o índice 0
+  cancelTurns(); jokers=[]; chs=[]; round=1; coins=0; jSel=null; summary=null; NET.end=null;
+  const N=NET.seats.length, hs=NET.seats.findIndex(x=>x&&x.pid==="H"), bots=shuffle(BOT_NAMES.slice());
+  if(!P.length||P.length!==N||!NET.rematch){
+    P=[]; NET.pidE={};
+    for(let e=0;e<N;e++){
+      const x=NET.seats[(hs+e)%N], base={hand:[],score:0,passed:0,lacks:new Set(),skip:0,skill:2};
+      if(!x) P.push({...base,name:bots.pop(),real:null,bot:true});
+      else if(x.pid==="H") P.push({...base,name:"Você",real:x.name,bot:false});
+      else { P.push({...base,name:x.name,real:x.name,bot:false,remote:true,pid:x.pid}); NET.pidE[x.pid]=e; }
+    }
+    P.forEach(p=>{ if(p.bot&&!p.real) p.real=p.name; });
+  } else P.forEach(p=>{ p.score=0; });
+  NET.rematch=false;
+  gameMode=N-1; diff=1; mode="play"; handNo=0; streak=0; handsWon=0; lastWin=-1;
+  newHand(true);
+}
+function hostAct(pid,m){
+  const e=NET.pidE[pid], resync=()=>hostPush(true);
+  if(e===undefined||done||mode!=="play"||turn!==e||busy) return resync();
+  const h=P[e].hand;
+  if(m.a==="play"){
+    const tv=Array.isArray(m.tile)?m.tile.map(num):[], i=h.findIndex(t=>t[0]===tv[0]&&t[1]===tv[1]);
+    if(i<0) return resync();
+    let side=m.side==="L"?"L":"R";
+    if(chain.length&&!fits(h[i],side)) return resync();
+    const t=h.splice(i,1)[0]; playTile(e,t,side); return;
+  }
+  if(m.a==="buy"){ if(movesFor(e).length||!canBuy(e)) return resync(); drawFor(e); say(e,"comprou"); render(); return; }
+  if(m.a==="pass"){ if(movesFor(e).length||canBuy(e)) return resync(); doPass(e); return; }
+  resync();
+}
+function snapFor(e){
+  const N=P.length, R=k=>(e+k)%N, V=i=>(i===null||i===undefined||i<0)?null:((i-e)%N+N)%N, rot=a=>a.map((_,k)=>a[R(k)]);
+  const E=NET.end;
+  return {t:"state",hn:handNo,turn:V(turn),done,busy:busy||turn!==e,TW,arms,bankN:bank.length,
+    chain:chain.map(r=>({cells:r.cells,vals:r.vals,o:r.o,t:r.t,wild:!!r.wild})),
+    P:Array.from({length:N},(_,k)=>{ const p=P[R(k)]; return {name:k===0?"Você":p.real||p.name,bot:!!p.bot,n:p.hand.length,hand:(k===0||done)?p.hand:null,score:p.score,skip:p.skip||0,lacks:[...p.lacks]}; }),
+    talk:Array.from({length:N},(_,k)=>{ const x=talk[R(k)]; return x&&x.until>Date.now()?{t:x.t,ms:x.until-Date.now()}:null; }),
+    end:E&&{...E,winner:V(E.winner),won:rot(E.won),champ:rot(E.champ)},
+    info:{mode:NET.mode,target:NET.target,code:NET.code}};
+}
+function hostPush(now){
+  if(NET.role!=="host"||!NET.on) return;
+  const go=()=>{ NET.qT=0; for(const [pid,c] of NET.conns){ const e=NET.pidE[pid]; if(e===undefined) continue; try{ c.send(snapFor(e)); }catch(_){} } };
+  if(now){ clearTimeout(NET.qT); go(); return; }
+  if(!NET.qT) NET.qT=setTimeout(go,0);
+}
+
+// ---------- fim de mão (online) ----------
+function netEndHand(winner,how,lastT){
+  done=true; busy=true; cancelTurns();
+  const team=NET.mode==="2x2", side=i=>team?i%2:i, hp=P.map(p=>handPips(p.hand));
+  let ws=null, kind=how, bonus=0, pts=0;
+  if(how==="lock"||how==="short"){
+    const sides=[...new Set(P.map((_,i)=>side(i)))], sums=sides.map(s=>P.reduce((a,_,i)=>side(i)===s?a+hp[i]:a,0)), min=Math.min(...sums);
+    const c=sides.filter((_,k)=>sums[k]===min);
+    if(c.length===1){ ws=c[0]; pts=sums.reduce((a,v,k)=>sides[k]===ws?a:a+v,0); winner=P.map((_,i)=>i).filter(i=>side(i)===ws).sort((a,b)=>hp[a]-hp[b])[0]; }
+    else winner=null;
+    kind="lock";
+  } else {
+    ws=side(winner); pts=P.reduce((a,_,i)=>side(i)===ws?a:a+hp[i],0);
+    const both=chain.length>1&&lastT&&lastT[0]>=0&&(()=>{ const e=endsOf(); return e.L===e.R; })(), d=isDbl(lastT||[0,1]);
+    if(d&&both){kind="cruz";bonus=20;} else if(both){kind="lalo";bonus=10;} else if(d){kind="bucha";bonus=5;} else kind="bat";
+    pts+=bonus;
+  }
+  if(ws!==null){ P.forEach((p,i)=>{ if(side(i)===ws) p.score+=pts; }); lastWin=winner; }
+  const champ=P.map(p=>p.score>=NET.target);
+  NET.end={how:kind,bonus,pts,winner,won:P.map((_,i)=>ws!==null&&side(i)===ws),champ,over:champ.some(Boolean)};
+  peekUntil=Date.now()+99999999;
+  render(); showNetEnd(NET.end); hostPush(true);
+}
+const KIND={bat:"Batida",bucha:"Batida de bucha",lalo:"Lá e lô",cruz:"Cruzada"};
+function showNetEnd(E){
+  const box=$("handend"); if(!E){ box.classList.add("hidden"); return; }
+  const team=NET.mode==="2x2", nm=i=>i===0?"Você":P[i].name, host=NET.role==="host";
+  const how=KIND[E.how]?E.how:"lock", pts=num(E.pts), bonus=num(E.bonus);
+  let title, txt;
+  if(how==="lock") txt=E.winner===null?"Mesa trancada: empate, ninguém pontua.":`Mesa trancada: ${team?(E.won[0]?"sua dupla":"a dupla adversária"):nm(E.winner)} tinha menos pontos na mão. +${pts} pontos.`;
+  else txt=`${nm(E.winner)} bateu! ${KIND[how]}${bonus?` (+${bonus})`:""}. +${pts} pontos${team?" para a dupla":""}.`;
+  if(E.over){
+    const w=P.map((_,i)=>i).filter(i=>E.champ[i]);
+    title=E.champ[0]?(team?"Sua dupla venceu a partida! 🏆":"Você venceu a partida! 🏆"):(team?"A dupla adversária venceu a partida":`${w.map(nm).join(" e ")} venceu a partida`);
+  } else title=E.winner===null?"Mão empatada":E.won[0]?(E.winner===0?"Você venceu a mão!":"Sua dupla venceu a mão!"):(team?"A dupla adversária venceu a mão":`${nm(E.winner)} venceu a mão`);
+  const T=NET.target;
+  const rows=P.map((p,i)=>`<div class="he-row${E.won[i]?" win":""}"><span>${p.name}${team?` <small>· ${(i%2)?"adversário":"sua dupla"}</small>`:""}</span><i>${handPips(p.hand)} na mão</i><b>${p.score} / ${T}</b></div>`).join("");
+  const btn=host?`<button class="btn" id="henext">${E.over?"Jogar de novo ▶":"Próxima mão ▶"}</button>`:`<button class="btn" id="henext" disabled>Esperando o anfitrião…</button>`;
+  box.classList.remove("hidden");
+  box.innerHTML=`<h3>${title}</h3><p>${txt}</p><div class="he-rows">${rows}</div><div class="he-btns">${btn}${E.over?`<button class="btn alt" id="heleave">Sair da sala</button>`:""}</div>`;
+  if(host) $("henext").onclick=()=>{ box.classList.add("hidden"); peekUntil=0;
+    if(E.over){ NET.rematch=true; netMatch(); } else { NET.end=null; newHand(false); } };
+  const lv=$("heleave"); if(lv) lv.onclick=()=>{ netLeave(); openOnline(); };
+  if(E.champ[0]||E.won[0]) sfx.win(); else sfx.bad();
+}
+
+// ---------- cliente ----------
+function joinRoom(code){
+  cfg.netName=cleanName($("on-name").value); save();
+  if(!cfg.netName){ onStatus("Escreva seu nome primeiro.",true); sfx.bad(); $("on-name").focus(); return; }
+  onStatus("Procurando a sala "+code+"…"); $("on-join").disabled=true;
+  const fail=t=>{ $("on-join").disabled=false; onStatus(t,true); sfx.bad(); };
+  loadPeer().then(()=>{
+    const peer=new Peer(undefined,peerOpts()); let ok=false;
+    const to=setTimeout(()=>{ if(!ok){ try{peer.destroy();}catch(e){} fail("A sala não respondeu. Confira o código e a internet."); } },15000);
+    peer.on("open",id=>{
+      const c=peer.connect(PEER_PRE+code,{reliable:true});
+      c.on("open",()=>{ ok=true; clearTimeout(to); $("on-join").disabled=false;
+        NET.role="client"; NET.peer=peer; NET.hostConn=c; NET.code=code; NET.me=id; NET.leaving=false; NET.lastKey="";
+        watch(c,()=>clientLost("A conexão com o anfitrião caiu.")); heartbeat();
+        c.send({t:"hello",name:myName(),v:1}); onStatus("Conectado! Entrando…"); });
+      c.on("data",m=>{ c._last=Date.now(); if(m&&typeof m==="object") clientData(m); });
+      c.on("close",()=>{ if(ok) clientLost("O anfitrião saiu da sala."); });
+      c.on("error",()=>{});
+    });
+    peer.on("error",e=>{ if(!ok){ clearTimeout(to); try{peer.destroy();}catch(_){} fail(errText(e)); } });
+    peer.on("disconnected",()=>{ if(NET.peer===peer&&!NET.leaving) try{ peer.reconnect(); }catch(e){} });
+  }).catch(()=>fail("Não consegui carregar o modo online. Confira a internet."));
+}
+function clientData(m){
+  if(m.t==="ping") return;
+  if(m.t==="no"){ const w=cleanTxt(m.why)||"Não deu para entrar."; netLeave(); openOnline(); onStatus(w,true); sfx.bad(); return; }
+  if(m.t==="bye"){ clientLost("O anfitrião encerrou a sala."); return; }
+  if(m.t==="lobby"){
+    NET.lobby={code:cleanTxt(m.code),mode:NMODES[m.mode]?m.mode:"1x1",target:num(m.target)||100,seats:(m.seats||[]).slice(0,4).map(x=>x&&{pid:String(x.pid),name:cleanName(x.name)})};
+    NET.mode=NET.lobby.mode; NET.target=NET.lobby.target;
+    if(!NET.on){ if($("online").classList.contains("hidden")) screen("online"); onStatus(""); renderLobby(); }
+    return;
+  }
+  if(m.t==="state") clientApply(m);
+}
+function clientApply(s){
+  const first=!NET.on;
+  if(first){ NET.on=true; document.body.classList.add("netgame"); show(true); }
+  if(s.info){ NET.mode=NMODES[s.info.mode]?s.info.mode:NET.mode; NET.target=num(s.info.target)||NET.target; NET.code=cleanTxt(s.info.code)||NET.code; }
+  const prevHn=first?-1:handNo, prevKeys=new Set(chain.map(r=>r.t+"|"+r.cells)), prevHand=hand.map(t=>t+""), selT=sel!==null&&hand[sel]?hand[sel]+"":null;
+  const T2=a=>Array.isArray(a)?[num(a[0]),num(a[1])]:[0,0];
+  P=(s.P||[]).slice(0,4).map((x,k)=>({name:k===0?"Você":cleanName(x.name)||"?",bot:!!x.bot,remote:!x.bot,
+    hand:x.hand?x.hand.slice(0,30).map(T2):Array.from({length:Math.min(30,num(x.n))},()=>[0,0]),
+    score:num(x.score),skill:2,skip:num(x.skip),passed:0,lacks:new Set((x.lacks||[]).map(num)),reveal:null}));
+  if(!P.length) return;
+  hand=P[0].hand; sortHand(); gameMode=P.length-1; mode="play";
+  handNo=num(s.hn); turn=num(s.turn); done=!!s.done; busy=!!s.busy; TW=num(s.TW)||12;
+  const A=s.arms||{}, arm=a=>({x:num(a&&a.x),y:num(a&&a.y),dir:num(a&&a.dir)||1,vd:num(a&&a.vd)||1,end:a&&a.end!==null&&a.end!==undefined?num(a.end):null});
+  arms={L:arm(A.L),R:arm(A.R)};
+  let fresh=0;
+  chain=(s.chain||[]).slice(0,28).map(r=>{ const rec={cells:(r.cells||[]).slice(0,2).map(T2),vals:T2(r.vals),o:r.o==="v"?"v":"h",t:T2(r.t),wild:!!r.wild};
+    rec.fresh=handNo===prevHn&&!prevKeys.has(rec.t+"|"+rec.cells); if(rec.fresh) fresh++; return rec; });
+  bank=new Array(Math.min(28,num(s.bankN))).fill(0);
+  lockEnd=null; banNum=null; ponteArmed=false; jokers=[]; chs=[]; used={};
+  peekUntil=done?Date.now()+99999999:0;
+  sel=selT?hand.findIndex(t=>t+""===selT):null; if(sel!==null&&sel<0) sel=null;
+  (s.talk||[]).forEach((x,k)=>{ if(x&&k>0) talk[k]={t:cleanTxt(x.t),until:Date.now()+Math.min(3000,num(x.ms))}; else if(k>0) delete talk[k]; });
+  render(fresh>0);
+  if(fresh&&!done) sfx.play();
+  if(handNo!==prevHn){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>chestOut(hand.map((_,k)=>k),120)));
+    msg(`Mão ${handNo}: ${turn===0?"você começa":P[turn].name+" começa"}.`); NET.lastKey="";
+  } else if(!done&&hand.length>prevHand.length){
+    const left=prevHand.slice(), nw=[]; hand.forEach((t,k)=>{ const j=left.indexOf(t+""); if(j>=0) left.splice(j,1); else nw.push(k); });
+    if(nw.length) setTimeout(()=>chestOut(nw,0),0);
+  }
+  if(!done&&turn===0&&!busy){ const key=handNo+":"+chain.length+":"+hand.length; if(key!==NET.lastKey){ NET.lastKey=key; if(handNo===prevHn) humanTurnStart(); else setTimeout(()=>{ if(NET.on&&turn===0&&!done) humanTurnStart(); },1200); } }
+  showNetEnd(done&&s.end?{how:String(s.end.how),bonus:num(s.end.bonus),pts:num(s.end.pts),winner:s.end.winner===null||s.end.winner===undefined?null:num(s.end.winner),
+    won:(s.end.won||[]).map(Boolean),champ:(s.end.champ||[]).map(Boolean),over:!!s.end.over}:null);
+}
+function clientLost(why){
+  if(NET.role!=="client"||NET.leaving) return;
+  const wasGame=NET.on; netLeave(); openOnline(); onStatus(why,true); sfx.bad();
+  if(wasGame) msg("");
+}
+
+// ---------- sair ----------
+function netLeave(){
+  const r=NET.role, peer=NET.peer, conns=[...NET.conns.values()], hc=NET.hostConn;
+  NET.leaving=true; clearInterval(NET.hb); clearTimeout(NET.qT);
+  if(r==="host") conns.forEach(c=>{ try{ c.send({t:"bye"}); }catch(e){} });
+  setTimeout(()=>{ conns.forEach(c=>{ try{c.close();}catch(e){} }); if(hc) try{hc.close();}catch(e){} if(peer) try{peer.destroy();}catch(e){} },r==="host"?250:0);
+  if(NET.on){ cancelTurns(); mode=null; }
+  Object.assign(NET,{on:false,role:null,peer:null,conns:new Map(),hostConn:null,pidE:{},end:null,lobby:null,qT:0,lastKey:"",rematch:false});
+  document.body.classList.remove("netgame"); $("handend").classList.add("hidden");
+}
+window.addEventListener("pagehide",()=>{ if(NET.role) netLeave(); });
+
+// ---------- render: placa da partida e envio do estado ----------
+const renderSolo=render;
+render=function(f){
+  renderSolo(f);
+  if(!NET.on) return;
+  const M=NMODES[NET.mode]||NMODES["1x1"], team=NET.mode==="2x2";
+  const tk=document.querySelector(".ticket"); if(tk){ tk.classList.remove("boss"); const lb=tk.querySelector(".tk-lbl"); if(lb) lb.textContent="PARTIDA ONLINE"; }
+  $("bname").textContent=`${M.n} · sala ${NET.code}`;
+  $("bdesc").textContent=team?`A dupla que chegar a ${NET.target} pontos vence`:`Quem chegar a ${NET.target} pontos vence`;
+  const sh=document.querySelector(".sb-head span"); if(sh) sh.textContent=team?"sua dupla":"seus pontos";
+  hostPush();
+};
+{ const sh=document.querySelector(".sb-head span"); if(sh) sh.dataset.solo=sh.textContent; }
+const screenSolo=screen;
+screen=function(n){ screenSolo(n); if(!NET.on){ const sh=document.querySelector(".sb-head span"); if(sh&&sh.dataset.solo) sh.textContent=sh.dataset.solo; } };
+// link de convite: ?sala=CODIGO
+try{ const c=new URLSearchParams(location.search).get("sala"); if(c&&/^[A-Z0-9]{5}$/i.test(c)) openOnline(c.toUpperCase()); }catch(e){}
 </script>
 </body>
 </html>

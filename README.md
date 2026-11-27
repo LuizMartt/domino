@@ -16,6 +16,18 @@ Abra o `index.html` no navegador, no computador ou no celular.
 - **Níveis:** são 8, e os níveis 3, 6 e 8 são chefes. Os bots ficam mais espertos a cada 3 níveis.
 - **Coringas:** os passivos ficam sempre ligados. Os ativos têm 1 uso por mão.
 
+## Online com amigos
+
+Na tela inicial, toque em **Online**.
+
+- **Criar sala:** escolha 1×1, 2×2 ou Todos (4 na mesa, cada um por si) e a meta de pontos. Você recebe um código de 5 letras e vira o anfitrião: a partida roda no seu aparelho.
+- **Entrar:** os amigos digitam o código em *Entrar numa sala*, ou abrem o link que o anfitrião mandou (`?sala=CODIGO`).
+- No 2×2 o parceiro senta na sua frente e a dupla soma os pontos das mãos adversárias. Toque numa vaga livre para trocar de lugar.
+- No 2×2 e no Todos, vagas livres viram bots. Se alguém cair, um bot assume até a pessoa voltar com o mesmo nome.
+- Não tem coringas nem loja: vence quem chegar primeiro à meta.
+
+A conexão é direta entre os navegadores (WebRTC, via [PeerJS](https://peerjs.com)). O servidor público do PeerJS só apresenta os jogadores uns aos outros; as jogadas não passam por ele. Precisa de internet, e o anfitrião deve manter a aba aberta.
+
 ## Jogar online (GitHub Pages)
 
 Em **Settings → Pages**, escolha *Deploy from a branch*, depois a branch `main` e a pasta `/ (root)`. Em um ou dois minutos o jogo fica disponível em `https://SEU-USUARIO.github.io/NOME-DO-REPO/`.
@@ -24,8 +36,8 @@ Em **Settings → Pages**, escolha *Deploy from a branch*, depois a branch `main
 
 | Arquivo | O que é |
 |---|---|
-| `index.html` | O jogo inteiro: HTML, CSS e JavaScript |
+| `index.html` | O jogo inteiro: HTML, CSS e JavaScript (o PeerJS é carregado de um CDN só quando você abre o modo online) |
 
 ## Status
 
-Protótipo em desenvolvimento (v0.5).
+Protótipo em desenvolvimento (v0.6).
