@@ -1029,6 +1029,11 @@ body.widegame.sideseats .opps.m3 .pos-l .nm small,body.widegame.sideseats .opps.
 .oninp.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:24px;font-weight:700}
 .onrow{margin:12px 0;font-size:16px}
 .onrow small{font-size:12px}
+.stepper{display:flex;align-items:center;border:3px solid var(--edge);border-radius:10px;overflow:hidden;flex:none;background:#2b3a3f}
+.stepper button{width:44px;height:40px;border:0;background:#3a4d53;color:#fff;font:700 24px var(--font);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.stepper button:active{background:var(--gold);color:#2a1d00}
+.stepper button:disabled{opacity:.35}
+.stepper b{min-width:62px;text-align:center;font-size:22px;color:var(--gold)}
 #on-mode button{min-width:0;padding:10px 4px}
 #on-mode .pk-art{gap:3px}
 #on-mode .pk-art i{width:12px;height:24px}
@@ -1351,7 +1356,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
           <button data-v="2x2"><span class="pk-art"><i></i><i></i><b>VS</b><i class="bk"></i><i class="bk"></i></span><b>2×2</b><small>Duplas, parceiro na frente</small></button>
           <button data-v="ffa"><span class="pk-art"><i></i><i class="bk"></i><i class="bk"></i><i class="bk"></i></span><b>Todos</b><small>4 na mesa, cada um por si</small></button>
         </div>
-        <div class="srow onrow"><span>Meta de pontos</span><div class="seg" id="on-target"><button data-v="50">50</button><button data-v="100">100</button><button data-v="200">200</button></div></div>
+        <div class="srow onrow"><span>Meta de pontos<small>de 10 em 10</small></span><div class="stepper" id="on-target"><button data-d="-10" aria-label="Diminuir meta">−</button><b id="on-tval">100</b><button data-d="10" aria-label="Aumentar meta">+</button></div></div>
         <div class="srow onrow"><span>Rodadas<small id="on-roundsnote">loja com coringas entre as rodadas</small></span><div class="seg" id="on-rounds"><button data-v="1">1</button><button data-v="3">Md3</button><button data-v="5">Md5</button></div></div>
         <div class="srow onrow" id="on-shoprow"><span>Coringas<small>cada um escolhe 1 coringa antes de começar</small></span><button class="sw" id="on-shop" role="switch" aria-checked="true"></button></div>
         <button class="btn" id="on-create">Criar sala</button>
@@ -1393,7 +1398,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
       <li><b>1×1</b>: dois jogadores, 14 pedras no banco. <b>2×2</b>: duplas com o parceiro na sua frente, e a dupla soma os pontos das mãos adversárias. <b>Todos</b>: quatro na mesa, cada um por si.</li>
       <li>No 2×2 e no Todos, vagas livres viram bots. Se alguém cair, um bot assume o lugar até a pessoa voltar com o mesmo nome.</li>
       <li>Cada <b>rodada</b> é uma corrida até a meta de pontos. Na <b>melhor de 3</b> (ou de 5), leva a partida quem vencer 2 (ou 3) rodadas.</li>
-      <li>Com mais de uma rodada, a primeira é sem coringas. Cada mão rende $2 (+$3 para quem venceu a mão, +$4 para quem fechou a rodada), e entre as rodadas a loja abre para todos. A próxima rodada começa quando todos tocarem em <b>Pronto</b>.</li>
+      <li>Com mais de uma rodada, cada um escolhe 1 coringa inicial com $8 antes da rodada 1. Cada mão rende $2 (+$3 para quem venceu a mão, +$4 para quem fechou a rodada), e entre as rodadas a loja abre para todos. A próxima rodada começa quando todos tocarem em <b>Pronto</b>.</li>
       <li>Com 1 rodada, dá para escolher jogar com ou sem coringas. Com coringas, cada um escolhe 1 coringa inicial com $8.</li>
       <li>No 2×2, os coringas de pontos valem para a dupla.</li></ul></div>
   </section>
@@ -3385,19 +3390,30 @@ function openOnline(code){
   if(code&&!cfg.netName) setTimeout(()=>$("on-name").focus(),50);
 }
 function onPick(){
-  const m=cfg.netMode||"1x1", t=cfg.netTarget||100;
+  const m=cfg.netMode||"1x1", t=netTargetCfg();
   document.querySelectorAll("#on-mode button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
-  document.querySelectorAll("#on-target button").forEach(b=>b.classList.toggle("on",+b.dataset.v===t));
+  $("on-tval").textContent=t;
+  document.querySelectorAll("#on-target button").forEach(b=>b.disabled=(+b.dataset.d<0&&t<=T_MIN)||(+b.dataset.d>0&&t>=T_MAX));
   $("on-shop").setAttribute("aria-checked",cfg.netShop!==false?"true":"false");
   const r=[1,3,5].includes(cfg.netRounds)?cfg.netRounds:3;
   document.querySelectorAll("#on-rounds button").forEach(b=>b.classList.toggle("on",+b.dataset.v===r));
   $("on-shoprow").classList.toggle("hidden",r>1);
-  $("on-roundsnote").textContent=r>1?`vence quem ganhar ${Math.ceil(r/2)} rodadas · loja entre elas`:"uma corrida até a meta";
+  $("on-roundsnote").textContent=r>1?`vence quem ganhar ${Math.ceil(r/2)} rodadas · loja no início e entre elas`:"uma corrida até a meta";
 }
 document.querySelectorAll("#on-rounds button").forEach(b=>b.onclick=()=>{ cfg.netRounds=+b.dataset.v; save(); onPick(); sfx.sel(); });
 $("on-shop").onclick=()=>{ cfg.netShop=cfg.netShop===false; save(); onPick(); sfx.sel(); };
 document.querySelectorAll("#on-mode button").forEach(b=>b.onclick=()=>{ cfg.netMode=b.dataset.v; save(); onPick(); sfx.sel(); });
-document.querySelectorAll("#on-target button").forEach(b=>b.onclick=()=>{ cfg.netTarget=+b.dataset.v; save(); onPick(); sfx.sel(); });
+// meta de 10 em 10 (segurar o botão repete)
+const T_MIN=10, T_MAX=500;
+function netTargetCfg(){ const t=Math.round((+cfg.netTarget||100)/10)*10; return Math.max(T_MIN,Math.min(T_MAX,t)); }
+document.querySelectorAll("#on-target button").forEach(b=>{
+  let rep=0, del=0;
+  const step=()=>{ const t=netTargetCfg()+(+b.dataset.d); if(t<T_MIN||t>T_MAX) return stop(); cfg.netTarget=t; onPick(); sfx.sel(); };
+  const stop=()=>{ clearTimeout(del); clearInterval(rep); del=rep=0; save(); };
+  b.onpointerdown=e=>{ e.preventDefault(); step(); del=setTimeout(()=>{ rep=setInterval(step,90); },420); };
+  b.onpointerup=b.onpointerleave=b.onpointercancel=stop;
+  b.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); step(); save(); } };
+});
 $("on-name").oninput=()=>{ cfg.netName=cleanName($("on-name").value); save(); };
 $("on-code").oninput=()=>{ const e=$("on-code"); e.value=e.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5); };
 $("on-code").onkeydown=e=>{ if(e.key==="Enter") $("on-join").click(); };
@@ -3468,7 +3484,7 @@ function hostCreate(tries){
     const code=newCode(), peer=new Peer(PEER_PRE+code,peerOpts());
     let opened=false;
     peer.on("open",()=>{ opened=true; $("on-create").disabled=false;
-      NET.role="host"; NET.peer=peer; NET.code=code; NET.me="H"; NET.mode=cfg.netMode||"1x1"; NET.target=cfg.netTarget||100; NET.rounds=[1,3,5].includes(cfg.netRounds)?cfg.netRounds:3; NET.shop=NET.rounds>1||cfg.netShop!==false; NET.shopId=0; NET.leaving=false;
+      NET.role="host"; NET.peer=peer; NET.code=code; NET.me="H"; NET.mode=cfg.netMode||"1x1"; NET.target=netTargetCfg(); NET.rounds=[1,3,5].includes(cfg.netRounds)?cfg.netRounds:3; NET.shop=NET.rounds>1||cfg.netShop!==false; NET.shopId=0; NET.leaving=false;
       NET.seats=Array(NMODES[NET.mode].N).fill(null); NET.seats[0]={pid:"H",name:myName()};
       onStatus(""); heartbeat(); hostLobbyPush(); sfx.buy(); });
     peer.on("connection",c=>hostConn(c));
@@ -3525,7 +3541,7 @@ function hostStart(){
 function netMatch(){
   // monta a mesa a partir das cadeiras, girando para que o anfitrião seja o índice 0
   cancelTurns(); chs=[]; round=1; jSel=null; summary=null; NET.end=null; NET.phase="play"; NET.round=1;
-  const c0=NET.shop&&NET.rounds===1?8:0;                 // 1 rodada com coringas: $8 para o coringa inicial
+  const c0=NET.shop?8:0;                                 // $8 para escolher o coringa inicial
   jokers=[]; coins=c0;
   const N=NET.seats.length, hs=NET.seats.findIndex(x=>x&&x.pid==="H"), bots=shuffle(BOT_NAMES.slice());
   const fresh=()=>({hand:[],score:0,passed:0,lacks:new Set(),skip:0,skill:2,jk:[],coins:c0,used:{},dbl:0,streak:0,rw:0});
@@ -3541,7 +3557,7 @@ function netMatch(){
   } else P.forEach(p=>{ const f=fresh(); p.score=0; p.jk=f.jk; p.coins=f.coins; p.streak=0; p.rw=0; });
   NET.rematch=false;
   gameMode=N-1; diff=1; mode="play"; handNo=0; streak=0; handsWon=0; lastWin=-1;
-  if(NET.shop&&NET.rounds===1) netShopOpen(true); else newHand(true);
+  if(NET.shop) netShopOpen(true); else newHand(true);
 }
 function netNextRound(){
   NET.round++; NET.end=null; P.forEach(p=>{ p.score=0; p.streak=0; });
