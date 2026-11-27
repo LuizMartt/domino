@@ -2604,13 +2604,29 @@ $("onbtn").onclick=()=>openOnline();
 $("onback").onclick=()=>{ if(NET.role){ netLeave(); openOnline(); } else screen("home"); };
 $("on-create").onclick=()=>hostCreate();
 $("on-join").onclick=()=>{ const c=$("on-code").value.trim().toUpperCase(); if(c.length!==5){ onStatus("O código tem 5 letras.",true); sfx.bad(); return; } joinRoom(c); };
-const roomLink=()=>location.origin+location.pathname+"?sala="+NET.code;
-function copyTxt(t){ try{ if(navigator.clipboard) return navigator.clipboard.writeText(t); }catch(e){}
-  const a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); try{document.execCommand("copy");}catch(e){} a.remove(); return Promise.resolve(); }
+function roomLink(){ // só existe link de verdade com o jogo publicado (http/https)
+  if(!/^https?:$/.test(location.protocol)) return null;
+  try{ const u=new URL(location.href); u.search="?sala="+NET.code; u.hash=""; return u.href; }catch(e){ return null; }
+}
+function copyOld(t){ const a=document.createElement("textarea"); a.value=t; a.setAttribute("readonly",""); a.style.cssText="position:fixed;opacity:0;left:0;top:0"; document.body.appendChild(a); a.select(); try{document.execCommand("copy");}catch(e){} a.remove(); }
+function copyTxt(t){ try{ if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(t).catch(()=>copyOld(t)); }catch(e){} copyOld(t); return Promise.resolve(); }
 $("lb-copy").onclick=()=>{ Promise.resolve(copyTxt(NET.code)).then(()=>{ $("lb-copy").textContent="Copiado ✓"; setTimeout(()=>$("lb-copy").textContent="Copiar código",1600); }); sfx.sel(); };
-$("lb-share").onclick=()=>{ const url=roomLink(), text=`Bora jogar dominó! Sala ${NET.code}`;
-  if(navigator.share) navigator.share({title:"Dominó",text,url}).catch(()=>{});
-  else Promise.resolve(copyTxt(text+": "+url)).then(()=>{ $("lb-share").textContent="Link copiado ✓"; setTimeout(()=>$("lb-share").textContent="Enviar link",1600); }); };
+$("lb-share").onclick=()=>{
+  const url=roomLink(), text=`Bora jogar dominó! Sala ${NET.code}`, btn=$("lb-share");
+  const done=t=>{ btn.textContent=t; setTimeout(()=>btn.textContent="Enviar link",1800); };
+  if(!url){ // aberto pelo arquivo: o link não serviria para os amigos
+    Promise.resolve(copyTxt(text)).then(()=>done("Código copiado ✓"));
+    onStatus("O link só funciona com o jogo publicado (GitHub Pages). Por enquanto mande o código.");
+    return;
+  }
+  let mobile=false; try{ mobile=matchMedia("(pointer:coarse)").matches; }catch(e){}
+  const copy=()=>Promise.resolve(copyTxt(text+": "+url)).then(()=>done("Link copiado ✓"));
+  // compartilhamento nativo só no celular: no computador ele pode travar a aba
+  if(mobile&&navigator.share&&(!navigator.canShare||navigator.canShare({url}))){
+    try{ navigator.share({title:"Dominó",text,url}).catch(e=>{ if(!e||e.name!=="AbortError") copy(); }); }catch(e){ copy(); }
+  } else copy();
+  sfx.sel();
+};
 $("lb-start").onclick=()=>hostStart();
 
 // ---------- sala (lobby) ----------
