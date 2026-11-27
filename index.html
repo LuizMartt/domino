@@ -866,6 +866,10 @@ body.no-anim .cell.crk,body.no-anim .pc.shaky{animation:none}
 .ghostend.no{border-color:#ff4c40!important;background:rgba(255,76,64,.14)!important;opacity:.75}
 .ghostend.no b{color:#ffb3a8}
 .ghostend.ok.turn{opacity:.8;border-style:dotted!important}
+.ghostend.gshape{pointer-events:none;animation:none!important;background:rgba(75,194,146,.14)!important}
+.ghostend.gshape.hover{background:rgba(75,194,146,.5)!important;transform:none;opacity:1}
+.ghostend.ghit{position:absolute;border:0!important;background:transparent!important;z-index:4;border-radius:6px}
+.ghostend.ghit:hover{background:rgba(75,194,146,.35)!important}
 .ghostend.hover{background:rgba(75,194,146,.55)!important;transform:scale(1.06)}
 .ghostend.nope{animation:bshake .32s ease-in-out}
 @keyframes gpulse{50%{background:rgba(75,194,146,.42)}}
@@ -1696,10 +1700,12 @@ function spotsFor(side){
   // ordem = preferência dos bots: na horizontal segue reto; na vertical volta para dentro (serpentina)
   const back=-(A.px||1);
   const dirs=A.dx?[["s",A.dx,0],["t",0,A.vd],["t2",0,-A.vd]]:[["t",back,0],["s",0,A.dy],["t2",-back,0]];
-  const mk=([k,dx,dy])=>{ const a=[A.hx+dx,A.hy+dy], b=[A.hx+2*dx,A.hy+2*dy];
+  // curva em "L": a metade que encosta fica logo depois da ponta e a pedra vira para o lado.
+  // "lateral" (fica do lado da última metade) só entra quando o L não cabe.
+  const mk=([k,dx,dy],lat)=>{ const a=lat?[A.hx+dx,A.hy+dy]:[A.hx+A.dx,A.hy+A.dy], b=[a[0]+dx,a[1]+dy];
     const cells=(dx+dy>0)?[a,b]:[b,a];
     return {cells,o:dx?"h":"v",dir:k,dx,dy,first:dx+dy>0}; };
-  const all=dirs.map(mk);
+  const all=dirs.map(d=>mk(d,false)), side2=dirs.filter(d=>d[0]!=="s").map(d=>mk(d,true));
   const free=sp=>sp.cells.every(c=>!occ.has(c[0]+","+c[1]));
   // espaço livre a partir de uma casa (evita curvas que encurralam alguma das pontas)
   const flood=(h,o,inside,cap)=>{ const q=[h], seen=new Set([h+""]); let n=0;
@@ -1710,8 +1716,10 @@ function spotsFor(side){
   const room=(sp,inside,cap)=>{ const o=new Set(occ); sp.cells.forEach(c=>o.add(c[0]+","+c[1]));
     const h=sp.first?sp.cells[1]:sp.cells[0];
     return Math.min(flood(h,o,inside,cap),flood([B.hx,B.hy],o,inside,cap)); };
-  const cand=all.filter(free);
-  let ok=cand.filter(sp=>sp.cells.every(c=>inMesa(c[0],c[1]))&&room(sp,true,10)>=10);
+  const inside=sp=>sp.cells.every(c=>inMesa(c[0],c[1]));
+  let cand=all.filter(free);
+  let ok=cand.filter(sp=>inside(sp)&&room(sp,true,10)>=10);
+  if(!ok.length){ const c2=side2.filter(free); ok=c2.filter(sp=>inside(sp)&&room(sp,true,10)>=10); cand=cand.concat(c2); }
   if(!ok.length) ok=cand.filter(sp=>room(sp,false,10)>=10);  // sem espaço na mesa: deixa passar da borda
   if(!ok.length) ok=cand.slice().sort((a,b)=>room(b,false,40)-room(a,false,40)).slice(0,1);
   if(!ok.length){                                        // ponta encurralada: vai para a casa livre mais perto
@@ -2048,11 +2056,21 @@ function renderTable(){
     sides.forEach(s=>{
       const ok=s==="C"||fits(t,s)||(ponteArmed&&!(lockEnd&&lockEnd.side===s));
       const spots=s==="C"?[nextSpot("R")]:ok?spotsFor(s):[nextSpot(s)];
-      spots.forEach(spot=>{
-        const el=mtEl({cells:spot.cells,o:spot.o,vals:[0,0]},g,"ghostend"+(ok?" ok":" no")+(spot.dir&&spot.dir!=="s"?" turn":""));
-        el.innerHTML=ok?"<b>+</b>":"<b>✕</b>"; el.dataset.side=s; el.dataset.dir=spot.dir||"s";
-        el.onclick=()=>{ if(ok) humanPlay(sel,s==="C"?"R":s,el.dataset.dir); else rejectSide(s); };
-        box.appendChild(el);
+      const many=spots.length>1;
+      spots.forEach((spot,k)=>{
+        const key=s+k, dir=spot.dir||"s";
+        const el=mtEl({cells:spot.cells,o:spot.o,vals:[0,0]},g,"ghostend"+(ok?" ok":" no")+(dir!=="s"?" turn":"")+(many?" gshape":""));
+        el.dataset.side=s; el.dataset.dir=dir; el.dataset.key=key;
+        const play=()=>{ if(ok) humanPlay(sel,s==="C"?"R":s,dir); else rejectSide(s); };
+        if(!many){ el.innerHTML=ok?"<b>+</b>":"<b>✕</b>"; el.onclick=play; box.appendChild(el); return; }
+        // várias opções dividem a casa colada na ponta: o toque fica só na casa que é de cada uma
+        el.innerHTML=""; box.appendChild(el);
+        const u=spot.first?spot.cells[1]:spot.cells[0], h=document.createElement("div");
+        h.className="ghostend ghit ok"; h.dataset.side=s; h.dataset.dir=dir; h.dataset.key=key;
+        h.style.left=(g.ox+u[0]*g.s)+"px"; h.style.top=(g.oy+u[1]*g.s)+"px"; h.style.width=h.style.height=g.s+"px";
+        h.innerHTML="<b>+</b>"; h.onclick=play;
+        h.onmouseenter=()=>el.classList.add("hover"); h.onmouseleave=()=>el.classList.remove("hover");
+        box.appendChild(h);
       });
     });
   }
@@ -2268,7 +2286,8 @@ function dragMove(ev){
   if(!drag) return; drag.x=ev.clientX; drag.y=ev.clientY;
   const gEl=ghostAt(ev.clientX,ev.clientY+drag.h*.3)||ghostAt(ev.clientX,ev.clientY);
   document.querySelectorAll("#table .ghostend.hover").forEach(x=>x.classList.remove("hover"));
-  if(gEl) gEl.classList.add("hover"); drag.over=gEl;
+  if(gEl){ gEl.classList.add("hover"); if(gEl.dataset.key) document.querySelectorAll(`#table .gshape[data-key="${gEl.dataset.key}"]`).forEach(x=>x.classList.add("hover")); }
+  drag.over=gEl;
 }
 function endDrag(drop){
   const dd=drag; if(!dd) return; cancelAnimationFrame(dd.raf); drag=null;
